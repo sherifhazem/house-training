@@ -86,7 +86,7 @@ if 'logged_in' not in st.session_state:
 
 def login_page():
     apply_custom_style()
-    st.html(f"<div style='text-align: center; padding: 60px 20px;'><h1 style='margin-bottom: 10px; font-size: 3rem;'>مربط جادا للخيل العربيه الاصيلة style='color: #6B7280; font-size: 1.2rem;'>بوابة الإدارة الذكية</p></div>")
+    st.html(f"<div style='text-align: center; padding: 60px 20px;'><h1 style='margin-bottom: 10px; font-size: 3rem;'<مربط جادا للخيل العربيه الاصيلة ة</h1><p style='color: #6B7280; font-size: 1.2rem;'>بوابة الإدارة الذكية</p></div>")
     
     _, col2, _ = st.columns([1, 1.5, 1])
     with col2:
@@ -209,7 +209,7 @@ else:
         c1, c2 = st.columns([1, 1])
         
         with c1:
-            st.subheader("🏥 الحالة الصحية ")
+            st.subheader("🏥 الحالة الصحية للقطيع")
             if "ملاحظات صحية" in filtered_df.columns:
                 # حساب نسبة الخيل السليم
                 total_records = len(filtered_df)
