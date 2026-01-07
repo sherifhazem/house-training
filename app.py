@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 from streamlit_gsheets import GSheetsConnection
 
-# إعدادات الصفحة
+# 1. إعدادات الصفحة (يجب أن تكون أول أمر)
 st.set_page_config(
     page_title="داش بورد مربط جادا",
     page_icon="🐎",
@@ -19,48 +19,56 @@ BG_COLOR = "#F5F5F5"    # بيج
 USER_ID = "jada"
 USER_PW = "A1070447089a"
 
-# تطبيق الستايل الخاص عبر CSS
-# ملاحظة: تم تبسيط الستايل لتجنب أي تعارض مع بايثون 3.13
-style_code = f"""
+# دالة لتطبيق الستايل (لتجنب أخطاء التوافق)
+def apply_custom_style():
+    style_code = f"""
     <style>
-    .main {{ background-color: {BG_COLOR}; }}
-    .stMetric {{ background-color: white; padding: 20px; border-radius: 10px; border: 1px solid #ddd; }}
+    .stApp {{ background-color: {BG_COLOR}; }}
+    .stMetric {{ 
+        background-color: white !important; 
+        padding: 20px !important; 
+        border-radius: 10px !important; 
+        border: 1px solid #ddd !important; 
+    }}
     h1, h2, h3 {{ color: {MAIN_COLOR}; font-family: 'Arial'; }}
-    div.stButton > button:first-child {{
-        background-color: {MAIN_COLOR};
-        color: white;
+    div.stButton > button {{
+        background-color: {MAIN_COLOR} !important;
+        color: white !important;
     }}
     </style>
     """
-st.markdown(style_code, unsafe_markdown=True)
+    st.markdown(style_code, unsafe_markdown=True)
 
 # إدارة حالة تسجيل الدخول (Session State)
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
 
-def login():
+def login_page():
+    apply_custom_style()
     st.markdown(f"<h2 style='text-align: center; color: {MAIN_COLOR};'>تسجيل الدخول - مربط جادا</h2>", unsafe_markdown=True)
     
-    with st.container():
-        _, col2, _ = st.columns([1, 2, 1])
-        with col2:
-            username = st.text_input("اسم المستخدم", placeholder="Enter username")
-            password = st.text_input("كلمة المرور", type="password", placeholder="Enter password")
-            if st.button("دخول"):
-                if username == USER_ID and password == USER_PW:
-                    st.session_state['logged_in'] = True
-                    st.rerun()
-                else:
-                    st.error("خطأ في اسم المستخدم أو كلمة المرور")
+    _, col2, _ = st.columns([1, 2, 1])
+    with col2:
+        username = st.text_input("اسم المستخدم", placeholder="Enter username")
+        password = st.text_input("كلمة المرور", type="password", placeholder="Enter password")
+        if st.button("دخول"):
+            if username == USER_ID and password == USER_PW:
+                st.session_state['logged_in'] = True
+                st.rerun()
+            else:
+                st.error("خطأ في اسم المستخدم أو كلمة المرور")
 
 # العرض بناءً على حالة الدخول
 if not st.session_state['logged_in']:
-    login()
+    login_page()
 else:
-    # 1. الاتصال بجوجل شيت (استخدم رابط الشيت الخاص بك هنا)
+    apply_custom_style()
+    
+    # 1. الاتصال بجوجل شيت
     SPREADSHEET_URL = "https://docs.google.com/spreadsheets/d/1g4UeiatYMYjUTRoEZtnQ-rl0JCFafvz-coraywc2Ukw/edit?usp=sharing"
 
     try:
+        # استخدام الاتصال المباشر
         conn = st.connection("gsheets", type=GSheetsConnection)
         df = conn.read(spreadsheet=SPREADSHEET_URL)
         
@@ -70,7 +78,7 @@ else:
             df['التاريخ'] = df['Timestamp'].dt.date
         
     except Exception as e:
-        st.error("فشل الاتصال بجدول البيانات. تأكد من إعدادات المشاركة (Anyone with the link can view)")
+        st.error(f"فشل الاتصال بجدول البيانات: {str(e)}")
         st.stop()
 
     # --- الواجهة الجانبية (Sidebar) ---
@@ -105,6 +113,7 @@ else:
     if filtered_df.empty:
         st.warning("لا توجد بيانات تطابق الفلاتر المختارة.")
     else:
+        # بطاقات الأداء
         col1, col2, col3 = st.columns(3)
         with col1:
             st.metric("إجمالي الحصص", len(filtered_df))
@@ -112,12 +121,14 @@ else:
             avg_rating = filtered_df["تقييم نشاط واستجابة الخيل"].mean()
             st.metric("متوسط تقييم النشاط", f"{avg_rating:.1f} / 5")
         with col3:
+            # تحويل القيم لنوع عددي للجمع
             filtered_df["مدة الحصة التدريبية بالدقيقة"] = pd.to_numeric(filtered_df["مدة الحصة التدريبية بالدقيقة"], errors='coerce')
             total_minutes = filtered_df["مدة الحصة التدريبية بالدقيقة"].sum()
             st.metric("إجمالي دقائق التدريب", f"{int(total_minutes)} دقيقة")
 
         st.markdown("---")
 
+        # الرسوم البيانية
         c1, c2 = st.columns(2)
         with c1:
             st.subheader("توزيع أنواع التدريب")
@@ -134,6 +145,8 @@ else:
 
         st.subheader("📋 سجل التدريب التفصيلي")
         display_df = filtered_df.copy()
+        
+        # عمود المرفقات
         media_col = "يمكنك رفع صور او فيدو للتوثيق"
         if media_col in display_df.columns:
             display_df['المرفقات'] = display_df[media_col].apply(
