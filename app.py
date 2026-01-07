@@ -209,7 +209,7 @@ else:
         c1, c2 = st.columns([1, 1])
         
         with c1:
-            st.subheader("🏥 الحالة الصحية للقطيع")
+            st.subheader("🏥 الحالة الصحية ")
             if "ملاحظات صحية" in filtered_df.columns:
                 # حساب نسبة الخيل السليم
                 total_records = len(filtered_df)
