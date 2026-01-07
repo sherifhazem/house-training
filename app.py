@@ -11,53 +11,57 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# الألوان العصرية الجديدة (Modern Slate & Emerald)
-PRIMARY_COLOR = "#1E293B"    # Slate Navy
-ACCENT_COLOR = "#10B981"     # Emerald Green
-TEXT_COLOR = "#0F172A"
-BG_COLOR = "#F8FAFC"        # Light Slate Gray
+# الألوان العصرية الجديدة مع تحسين التباين للوضوح
+PRIMARY_COLOR = "#0F172A"    # Navy غامق جداً للوضوح
+ACCENT_COLOR = "#059669"     # Emerald غامق قليلاً
+TEXT_MAIN = "#1E293B"        # لون نص أساسي واضح
+BG_COLOR = "#F1F5F9"        # خلفية رمادية فاتحة جداً
 
-# دالة تطبيق الستايل العصري
+# دالة تطبيق الستايل العصري المحسن
 def apply_custom_style():
     style_code = f"""
     <style>
         .stApp {{ background-color: {BG_COLOR}; }}
         
-        /* تحسين كروت الإحصائيات */
+        /* تحسين كروت الإحصائيات - ألوان أكثر حيوية ووضوحاً */
         [data-testid="stMetricValue"] {{
             color: {PRIMARY_COLOR} !important;
-            font-size: 2.5rem !important;
-            font-weight: 800 !important;
+            font-size: 2.8rem !important;
+            font-weight: 900 !important;
+            letter-spacing: -1px;
         }}
         [data-testid="stMetricLabel"] {{
-            color: #64748B !important;
-            font-size: 1rem !important;
-            font-weight: 600 !important;
+            color: {TEXT_MAIN} !important;
+            font-size: 1.1rem !important;
+            font-weight: 700 !important;
+            margin-bottom: 8px !important;
         }}
         .stMetric {{ 
             background-color: white !important; 
             padding: 24px !important; 
-            border-radius: 16px !important; 
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
-            border-bottom: 4px solid {ACCENT_COLOR} !important;
+            border-radius: 20px !important; 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05) !important;
+            border-left: 6px solid {ACCENT_COLOR} !important;
         }}
         
-        h1, h2, h3, p, span {{ font-family: 'Inter', 'Arial', sans-serif; }}
-        h1 {{ color: {PRIMARY_COLOR} !important; font-weight: 800 !important; }}
+        /* تحسين وضوح نصوص الجداول */
+        .stTable, .stDataFrame {{
+            color: {TEXT_MAIN} !important;
+        }}
+        
+        h1, h2, h3, h4 {{ 
+            color: {PRIMARY_COLOR} !important; 
+            font-weight: 800 !important; 
+        }}
         
         /* تخصيص الأزرار */
         div.stButton > button {{
             background-color: {PRIMARY_COLOR} !important;
             color: white !important;
             border-radius: 12px !important;
-            padding: 10px 24px !important;
-            font-weight: 600 !important;
+            padding: 12px 28px !important;
+            font-weight: 700 !important;
             border: none !important;
-            transition: all 0.3s ease !important;
-        }}
-        div.stButton > button:hover {{
-            background-color: {ACCENT_COLOR} !important;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1) !important;
         }}
     </style>
     """
@@ -69,7 +73,7 @@ if 'logged_in' not in st.session_state:
 
 def login_page():
     apply_custom_style()
-    st.html(f"<div style='text-align: center; padding: 40px;'><h1 style='margin-bottom: 0;'>مربط جادا للأصالة</h1><p style='color: #64748B;'>نظام إدارة وتتبع تدريب الخيل</p></div>")
+    st.html(f"<div style='text-align: center; padding: 40px;'><h1 style='margin-bottom: 0;'>مربط جادا للأصالة</h1><p style='color: {TEXT_MAIN}; font-size: 1.2rem;'>نظام إدارة وتتبع تدريب الخيل</p></div>")
     
     _, col2, _ = st.columns([1, 1.5, 1])
     with col2:
@@ -100,14 +104,14 @@ else:
         if 'Timestamp' in df.columns:
             df['Timestamp'] = pd.to_datetime(df['Timestamp'])
             df['التاريخ'] = df['Timestamp'].dt.date
-            df['وقت التدريب'] = df['Timestamp'].dt.strftime('%I:%M %p') # إضافة عمود الوقت
+            df['وقت التدريب'] = df['Timestamp'].dt.strftime('%I:%M %p')
             
     except Exception as e:
         st.error(f"فشل الاتصال بجدول البيانات: {e}")
         st.stop()
 
-    # القائمة الجانبية العصرية
-    st.sidebar.html(f"<div style='padding: 20px 0;'><h2 style='color:{PRIMARY_COLOR}; margin:0;'>JADA STABLES</h2><p style='font-size:0.8rem; color:#64748B;'>Dashboard v2.0</p></div>")
+    # القائمة الجانبية
+    st.sidebar.html(f"<div style='padding: 20px 0;'><h2 style='color:{PRIMARY_COLOR}; margin:0;'>JADA STABLES</h2><p style='font-size:0.8rem; color:{TEXT_MAIN};'>Dashboard v2.1</p></div>")
     
     if st.sidebar.button("تسجيل الخروج", use_container_width=True):
         st.session_state['logged_in'] = False
@@ -126,12 +130,11 @@ else:
 
     # الواجهة الرئيسية
     st.title("🐎 لوحة تتبع التدريب اليومي")
-    st.markdown("متابعة أداء الخيل والبرامج التدريبية المعتمدة")
     
     if filtered_df.empty:
         st.warning("لا توجد بيانات متاحة لهذا الاختيار.")
     else:
-        # كروت الإحصائيات العصرية
+        # كروت الإحصائيات
         m1, m2, m3 = st.columns(3)
         
         filtered_df["مدة الحصة التدريبية بالدقيقة"] = pd.to_numeric(filtered_df["مدة الحصة التدريبية بالدقيقة"], errors='coerce').fillna(0)
@@ -143,36 +146,46 @@ else:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # الرسوم البيانية
+        # الرسوم البيانية مع تحسين ألوان الخطوط للوضوح
         c1, c2 = st.columns([1, 2])
         with c1:
             st.markdown("#### توزيع التمارين")
             fig_p = px.pie(filtered_df, names="نوع التدريب اليومي", hole=0.5, 
-                         color_discrete_sequence=[PRIMARY_COLOR, ACCENT_COLOR, "#38BDF8", "#818CF8"])
-            fig_p.update_layout(margin=dict(t=0, b=0, l=0, r=0), showlegend=False)
+                         color_discrete_sequence=[PRIMARY_COLOR, ACCENT_COLOR, "#3B82F6", "#6366F1"])
+            fig_p.update_layout(
+                margin=dict(t=0, b=0, l=0, r=0), 
+                showlegend=True,
+                font=dict(color=PRIMARY_COLOR, size=14)
+            )
             st.plotly_chart(fig_p, use_container_width=True)
             
         with c2:
             st.markdown("#### منحنى أداء الخيل")
             fig_l = px.line(filtered_df, x="Timestamp", y="تقييم نشاط واستجابة الخيل", 
                            color="اسم الخيل", markers=True,
-                           color_discrete_sequence=[PRIMARY_COLOR, ACCENT_COLOR, "#38BDF8"])
-            fig_l.update_layout(xaxis_title=None, yaxis_title="التقييم", margin=dict(t=20, b=0))
+                           color_discrete_sequence=[PRIMARY_COLOR, ACCENT_COLOR, "#3B82F6"])
+            fig_l.update_layout(
+                xaxis_title=None, 
+                yaxis_title="التقييم", 
+                margin=dict(t=20, b=0),
+                font=dict(color=PRIMARY_COLOR, size=12),
+                hovermode="x unified"
+            )
             st.plotly_chart(fig_l, use_container_width=True)
 
         st.markdown("#### 📋 السجل التفصيلي للتدريب")
         
-        # تجهيز عمود المرفقات كروابط حقيقية
+        # تجهيز المرفقات
         media_col = "يمكنك رفع صور او فيدو للتوثيق"
         if media_col in filtered_df.columns:
             filtered_df['المرفقات'] = filtered_df[media_col]
         else:
             filtered_df['المرفقات'] = None
 
-        # اختيار الأعمدة وتجهيز الجدول
-        display_cols = ["التاريخ", "وقت التدريب", "اسم الخيل", "نوع التدريب اليومي", "ملاحظات صحية", "المرفقات"]
+        # إضافة مدة التدريب للقائمة المطلوبة للعرض
+        display_cols = ["التاريخ", "وقت التدريب", "اسم الخيل", "نوع التدريب اليومي", "مدة الحصة التدريبية بالدقيقة", "ملاحظات صحية", "المرفقات"]
         
-        # عرض الجدول مع تفعيل الروابط
+        # عرض الجدول مع تحسين وضوح البيانات والروابط
         st.dataframe(
             filtered_df[display_cols],
             use_container_width=True,
@@ -180,13 +193,16 @@ else:
                 "المرفقات": st.column_config.LinkColumn(
                     "المرفقات", 
                     display_text="🔗 فتح المرفق",
-                    help="اضغط لفتح الصورة أو الفيديو في نافذة جديدة"
+                    width="medium"
                 ),
                 "التاريخ": st.column_config.DateColumn("التاريخ", format="YYYY/MM/DD"),
-                "وقت التدريب": st.column_config.TextColumn("الوقت")
+                "وقت التدريب": st.column_config.TextColumn("الوقت"),
+                "مدة الحصة التدريبية بالدقيقة": st.column_config.NumberColumn("المدة (دقيقة)", format="%d د"),
+                "اسم الخيل": st.column_config.TextColumn("الخيل"),
+                "نوع التدريب اليومي": st.column_config.TextColumn("البرنامج")
             },
             hide_index=True
         )
 
     st.markdown("<br><br>", unsafe_allow_html=True)
-    st.html(f"<div style='text-align: center; color: #64748B; font-size: 0.9rem; border-top: 1px solid #E2E8F0; padding-top: 20px;'>نظام إدارة مربط جادا للأصالة © 2026</div>")
+    st.html(f"<div style='text-align: center; color: {TEXT_MAIN}; font-size: 1rem; border-top: 1px solid #CBD5E1; padding-top: 20px; font-weight: 600;'>نظام إدارة مربط جادا للأصالة © 2026</div>")
