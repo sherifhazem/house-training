@@ -47,7 +47,8 @@ if 'logged_in' not in st.session_state:
 
 def login_page():
     apply_custom_style()
-    st.markdown(f"<h1 style='text-align: center;'>تسجيل الدخول - مربط جادا</h1>", unsafe_markdown=True)
+    # تم التصحيح: استخدام st.html بدلاً من st.markdown للعناوين
+    st.html(f"<h1 style='text-align: center;'>تسجيل الدخول - مربط جادا</h1>")
     
     _, col2, _ = st.columns([1, 2, 1])
     with col2:
@@ -82,7 +83,8 @@ else:
         st.stop()
 
     # القائمة الجانبية
-    st.sidebar.markdown(f"<h2 style='color:{MAIN_COLOR}'>مربط جادا للأصالة</h2>", unsafe_markdown=True)
+    # تم التصحيح: استخدام الخاصية الصحيحة unsafe_allow_html
+    st.sidebar.markdown(f"<h2 style='color:{MAIN_COLOR}'>مربط جادا للأصالة</h2>", unsafe_allow_html=True)
     
     if st.sidebar.button("تسجيل الخروج"):
         st.session_state['logged_in'] = False
@@ -145,4 +147,5 @@ else:
         st.dataframe(filtered_df[cols], use_container_width=True)
 
     st.divider()
-    st.markdown(f"<div style='text-align: center; color: {MAIN_COLOR};'>جميع الحقوق محفوظة - مربط جادا 2026</div>", unsafe_markdown=True)
+    # تم التصحيح: استخدام st.html للتذييل
+    st.html(f"<div style='text-align: center; color: {MAIN_COLOR};'>جميع الحقوق محفوظة - مربط جادا 2026</div>")
