@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go # مكتبة الرسوم المتقدمة للمؤشرات
 from streamlit_gsheets import GSheetsConnection
 
 # 1. إعدادات الصفحة - يجب أن تظل أول أمر
@@ -12,20 +13,18 @@ st.set_page_config(
 )
 
 # الألوان العصرية الرسمية (Modern Corporate Palette)
-PRIMARY_COLOR = "#0B2447"    # Deep Royal Navy (أزرق داكن رسمي)
-ACCENT_COLOR = "#00A8CC"     # Bright Turquoise (فيروزي ساطع)
+PRIMARY_COLOR = "#0B2447"    # Deep Royal Navy
+ACCENT_COLOR = "#00A8CC"     # Bright Turquoise
 BG_COLOR = "#F3F4F6"        # Cool Gray Background
 TEXT_MAIN = "#1F2937"        # Dark Gray Text
 
-# لوحة ألوان عالية التباين للرسوم البيانية
+# لوحة ألوان متسقة مع هوية الموقع (تدرجات الأزرق والفيروزي)
 CHART_COLORS = [
+    "#0B2447",  # Navy
+    "#00609C",  # Medium Blue
     "#00A8CC",  # Turquoise
-    "#19376D",  # Navy
-    "#A5D7E8",  # Light Blue
-    "#F59E0B",  # Amber (للمقارنة)
-    "#10B981",  # Emerald
-    "#6366F1",  # Indigo
-    "#EC4899"   # Pink
+    "#48C9B0",  # Teal (للتباين الناعم)
+    "#1F2937"   # Charcoal
 ]
 
 # دالة تطبيق الستايل العصري المحسن
@@ -140,16 +139,43 @@ else:
     st.sidebar.divider()
     st.sidebar.markdown("### 🔍 تصفية السجلات")
 
+    # 1. فلتر التاريخ
+    min_date = df['التاريخ'].min()
+    max_date = df['التاريخ'].max()
+    
+    date_range = st.sidebar.date_input(
+        "الفترة الزمنية:",
+        value=(min_date, max_date),
+        min_value=min_date,
+        max_value=max_date
+    )
+
+    # 2. فلاتر الخيل والبرنامج
     horse_list = df["اسم الخيل"].unique().tolist()
     horse_filter = st.sidebar.multiselect("الخيل:", options=horse_list, default=horse_list)
     
     training_list = df["نوع التدريب اليومي"].unique().tolist()
     training_filter = st.sidebar.multiselect("البرنامج:", options=training_list, default=training_list)
 
-    filtered_df = df[df["اسم الخيل"].isin(horse_filter) & df["نوع التدريب اليومي"].isin(training_filter)].copy()
+    # تطبيق الفلترة
+    mask = (
+        df["اسم الخيل"].isin(horse_filter) & 
+        df["نوع التدريب اليومي"].isin(training_filter)
+    )
+    
+    # منطق فلترة التاريخ
+    if isinstance(date_range, tuple):
+        if len(date_range) == 2:
+            start_date, end_date = date_range
+            mask = mask & (df['التاريخ'] >= start_date) & (df['التاريخ'] <= end_date)
+        elif len(date_range) == 1:
+            start_date = date_range[0]
+            mask = mask & (df['التاريخ'] >= start_date)
+
+    filtered_df = df[mask].copy()
 
     # الواجهة الرئيسية
-    st.title("📊 لوحة المؤشرات والتحليل")
+    st.title("📊 تحليل التدريب اليومي لمربط جادا")
     st.markdown(f"<p style='color: #6B7280;'>نظرة شاملة على أداء وصحة الخيل في المربط</p>", unsafe_allow_html=True)
     st.divider()
     
@@ -172,61 +198,75 @@ else:
             total_hours = filtered_df['مدة الحصة التدريبية بالدقيقة'].sum() / 60
             st.metric("ساعات التدريب", f"{total_hours:.1f} ساعة")
         with col4:
-            # مؤشر الالتزام (مثال: عدد الخيول المتدربة اليوم)
             active_horses = filtered_df['اسم الخيل'].nunique()
             st.metric("الخيول النشطة", f"{active_horses}")
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # 2. قسم الرسوم البيانية (صفين)
+        # 2. قسم الرسوم البيانية
         
-        # الصف الأول: الحالة الصحية وتوزيع التمارين
+        # الصف الأول: مؤشر الصحة (Gauge) وتوزيع التمارين
         c1, c2 = st.columns([1, 1])
         
         with c1:
-            st.subheader("🏥 مؤشر الحالة الصحية")
+            st.subheader("🏥 الحالة الصحية للقطيع")
             if "ملاحظات صحية" in filtered_df.columns:
-                # تجميع البيانات حسب الحالة الصحية
-                health_counts = filtered_df["ملاحظات صحية"].value_counts().reset_index()
-                health_counts.columns = ["الحالة", "العدد"]
+                # حساب نسبة الخيل السليم
+                total_records = len(filtered_df)
+                healthy_count = len(filtered_df[filtered_df["ملاحظات صحية"] == "الخيل سليم تماماً"])
+                health_percentage = (healthy_count / total_records) * 100 if total_records > 0 else 0
                 
-                # ألوان مخصصة للصحة (أخضر للسليم، أحمر/برتقالي للإصابات)
-                health_colors = {
-                    "الخيل سليم تماماً": "#10B981", # Green
-                    "جروح/كدمات": "#F59E0B",      # Amber
-                    "عرج بسيط": "#EF4444",        # Red
-                    "حرارة مرتفعة": "#DC2626",    # Dark Red
-                    "قلة شهية": "#F97316"         # Orange
-                }
-                
-                fig_health = px.pie(health_counts, values="العدد", names="الحالة", hole=0.6,
-                                  color="الحالة", color_discrete_map=health_colors)
-                fig_health.update_layout(showlegend=True, margin=dict(t=0, b=0, l=0, r=0))
-                # إضافة نص في المنتصف
-                fig_health.update_traces(textposition='inside', textinfo='percent+label')
-                st.plotly_chart(fig_health, use_container_width=True)
+                # رسم مؤشر (Gauge Chart) بدلاً من الدائرة
+                fig_gauge = go.Figure(go.Indicator(
+                    mode = "gauge+number",
+                    value = health_percentage,
+                    domain = {'x': [0, 1], 'y': [0, 1]},
+                    title = {'text': "نسبة الخيول السليمة", 'font': {'size': 20, 'color': PRIMARY_COLOR}},
+                    number = {'suffix': "%", 'font': {'color': ACCENT_COLOR}},
+                    gauge = {
+                        'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': PRIMARY_COLOR},
+                        'bar': {'color': ACCENT_COLOR},
+                        'bgcolor': "white",
+                        'borderwidth': 2,
+                        'bordercolor': "gray",
+                        'steps': [
+                            {'range': [0, 60], 'color': '#FEE2E2'},  # أحمر فاتح للخطر
+                            {'range': [60, 85], 'color': '#FEF3C7'}, # أصفر للتحذير
+                            {'range': [85, 100], 'color': '#D1FAE5'} # أخضر للممتاز
+                        ],
+                        'threshold': {
+                            'line': {'color': "red", 'width': 4},
+                            'thickness': 0.75,
+                            'value': 90
+                        }
+                    }
+                ))
+                fig_gauge.update_layout(height=350, margin=dict(t=50, b=10, l=30, r=30))
+                st.plotly_chart(fig_gauge, use_container_width=True)
             else:
                 st.info("لا تتوفر بيانات صحية.")
 
         with c2:
             st.subheader("🎯 توزيع البرامج التدريبية")
+            # استخدام ألوان متسقة مع الهوية
             fig_p = px.pie(filtered_df, names="نوع التدريب اليومي", hole=0.6, 
                          color_discrete_sequence=CHART_COLORS)
-            fig_p.update_layout(margin=dict(t=0, b=0, l=0, r=0), showlegend=True)
+            fig_p.update_layout(margin=dict(t=30, b=0, l=0, r=0), showlegend=True)
             st.plotly_chart(fig_p, use_container_width=True)
 
-        # الصف الثاني: منحنى الأداء (عريض)
+        # الصف الثاني: منحنى الأداء
         st.subheader("📈 تتبع مستوى الأداء والنشاط")
+        # استخدام ألوان متسقة (CHART_COLORS) بدلاً من الألوان العشوائية
         fig_l = px.line(filtered_df, x="Timestamp", y="تقييم نشاط واستجابة الخيل", 
                        color="اسم الخيل", markers=True,
-                       color_discrete_sequence=CHART_COLORS) # استخدام ألوان عالية التباين
+                       color_discrete_sequence=CHART_COLORS)
         
         fig_l.update_layout(
             xaxis_title="التاريخ", 
             yaxis_title="مستوى التقييم (1-5)",
             margin=dict(t=20, b=20, l=0, r=0),
             hovermode="x unified",
-            legend=dict(orientation="h", y=1.1, x=0.5, xanchor="center"), # الأسطورة في الأعلى
+            legend=dict(orientation="h", y=1.1, x=0.5, xanchor="center"),
             plot_bgcolor="white",
             font=dict(size=14, color=TEXT_MAIN)
         )
