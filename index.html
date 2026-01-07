@@ -3,145 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحليل تدريب مربط جادا - الإصدار الاحترافي</title>
-    <!-- Tailwind CSS -->
+    <title>تحليل تدريب مربط جادا - التقرير الشامل</title>
+    <!-- المكتبات الأساسية -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- ApexCharts -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- PapaParse for CSV -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <!-- مكتبة تصدير PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;600;700&display=swap');
         body { font-family: 'IBM Plex Sans Arabic', sans-serif; background-color: #f1f5f9; }
-        .glass-card { background: white; border-radius: 1.5rem; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        
+        /* تصميم الكروت الزجاجي */
+        .glass-card { background: white; border-radius: 1rem; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
         .navy-gradient { background: linear-gradient(135deg, #0b2447 0%, #19376d 100%); }
+        
+        /* تحسينات للتقويم */
+        .calendar-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 0.5rem; font-size: 0.8rem; font-weight: bold; }
+        .day-active { background-color: #00a8cc; color: white; border: 2px solid #0b2447; }
+        .day-empty { background-color: #f8fafc; color: #cbd5e1; border: 1px dashed #e2e8f0; }
+
+        /* تنسيقات خاصة عند تصدير PDF */
+        .pdf-mode { background: white !important; color: black !important; padding: 20px; }
+        .pdf-mode .glass-card { box-shadow: none !important; border: 1px solid #ddd !important; break-inside: avoid; }
+        .pdf-mode nav { background: #0b2447 !important; color: white !important; }
+        .pdf-mode .text-slate-500 { color: #333 !important; }
+        .pdf-mode .no-print { display: none !important; }
     </style>
 </head>
 <body class="text-slate-900 overflow-x-hidden">
 
-    <!-- Header -->
-    <nav class="navy-gradient text-white p-5 shadow-2xl sticky top-0 z-50">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <div class="bg-cyan-500 p-2.5 rounded-2xl shadow-lg shadow-cyan-500/20">
-                    <i data-lucide="horse" class="w-7 h-7 text-white"></i>
+    <!-- العنصر الرئيسي الذي سيتم طباعته -->
+    <div id="dashboard-container">
+        <!-- الهيدر -->
+        <nav class="navy-gradient text-white p-5 shadow-2xl sticky top-0 z-50">
+            <div class="container mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <div class="bg-cyan-500 p-2.5 rounded-2xl shadow-lg shadow-cyan-500/20">
+                        <i data-lucide="horse" class="w-7 h-7 text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight">تحليل التدريب اليومي لمربط جادا</h1>
+                        <p class="text-[10px] text-cyan-300 opacity-80 uppercase tracking-widest">Advanced Management System</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight">تحليل التدريب اليومي لمربط جادا</h1>
-                    <p class="text-[10px] text-cyan-300 opacity-80 uppercase tracking-widest">Advanced Management Dashboard</p>
+                <!-- زر التصدير والتحميل -->
+                <div class="flex gap-3 no-print">
+                    <button onclick="exportPDF()" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2 border border-white/20">
+                        <i data-lucide="file-down" class="w-4 h-4"></i> تصدير PDF
+                    </button>
+                    <div id="loader" class="hidden">
+                        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    </div>
                 </div>
             </div>
-            <div id="loader" class="hidden">
-                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-            </div>
-        </div>
-    </nav>
+        </nav>
 
-    <main class="container mx-auto p-4 md:p-8 space-y-8">
-        
-        <!-- Filters Section -->
-        <div class="glass-card p-6 flex flex-wrap gap-4 items-end">
-            <div class="flex-1 min-w-[250px]">
-                <label class="block text-xs font-bold text-slate-500 mb-2">تصفية حسب التاريخ</label>
-                <div class="flex gap-2">
-                    <input type="date" id="startDate" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-cyan-500 transition text-sm">
-                    <input type="date" id="endDate" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-cyan-500 transition text-sm">
+        <main class="container mx-auto p-4 md:p-8 space-y-8">
+            
+            <!-- قسم الفلاتر (يتم اخفاؤه في الـ PDF ليكون التقرير نظيفاً) -->
+            <div class="glass-card p-6 flex flex-wrap gap-4 items-end no-print">
+                <div class="flex-1 min-w-[250px]">
+                    <label class="block text-xs font-bold text-slate-500 mb-2">تصفية حسب التاريخ</label>
+                    <div class="flex gap-2">
+                        <input type="date" id="startDate" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-cyan-500 transition text-sm">
+                        <input type="date" id="endDate" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-cyan-500 transition text-sm">
+                    </div>
                 </div>
+                <div class="flex-1 min-w-[150px]">
+                    <label class="block text-xs font-bold text-slate-500 mb-2 text-right">اسم الخيل</label>
+                    <select id="horseFilter" onchange="applyFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-cyan-500 transition text-sm appearance-none">
+                        <option value="all">كل الخيول</option>
+                    </select>
+                </div>
+                <button onclick="applyFilters()" class="bg-cyan-500 hover:bg-cyan-600 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-cyan-500/30 flex items-center gap-2">
+                    <i data-lucide="filter" class="w-4 h-4"></i> تحديث
+                </button>
             </div>
-            <div class="flex-1 min-w-[150px]">
-                <label class="block text-xs font-bold text-slate-500 mb-2 text-right">اسم الخيل</label>
-                <select id="horseFilter" onchange="applyFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-cyan-500 transition text-sm appearance-none">
-                    <option value="all">كل الخيول</option>
-                </select>
-            </div>
-            <button onclick="fetchData()" class="bg-cyan-500 hover:bg-cyan-600 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-cyan-500/30 flex items-center gap-2">
-                <i data-lucide="refresh-cw" class="w-4 h-4"></i> تحديث البيانات
-            </button>
-        </div>
 
-        <!-- KPI Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="glass-card p-6 flex items-center gap-5 border-r-4 border-slate-800">
-                <div class="bg-slate-100 p-4 rounded-2xl text-slate-800"><i data-lucide="list-checks"></i></div>
-                <div>
-                    <p class="text-xs font-bold text-slate-500 uppercase">إجمالي الحصص</p>
-                    <h3 id="statTotal" class="text-3xl font-black text-slate-900">--</h3>
-                </div>
+            <!-- معلومات التقرير (تظهر فقط في الـ PDF) -->
+            <div id="report-meta" class="hidden mb-4">
+                <h2 class="text-2xl font-bold text-[#0b2447] mb-2">تقرير الأداء الشامل</h2>
+                <p class="text-sm text-gray-600">تاريخ إصدار التقرير: <span id="printDate"></span></p>
             </div>
-            <div class="glass-card p-6 flex items-center gap-5 border-r-4 border-cyan-500">
-                <div class="bg-cyan-50 p-4 rounded-2xl text-cyan-600"><i data-lucide="star"></i></div>
-                <div>
-                    <p class="text-xs font-bold text-slate-500 uppercase">متوسط النشاط</p>
-                    <h3 id="statAvg" class="text-3xl font-black text-slate-900">--</h3>
-                </div>
-            </div>
-            <div class="glass-card p-6 flex items-center gap-5 border-r-4 border-emerald-500">
-                <div class="bg-emerald-50 p-4 rounded-2xl text-emerald-600"><i data-lucide="clock"></i></div>
-                <div>
-                    <p class="text-xs font-bold text-slate-500 uppercase">إجمالي الدقائق</p>
-                    <h3 id="statTime" class="text-3xl font-black text-slate-900">--</h3>
-                </div>
-            </div>
-            <div class="glass-card p-6 flex items-center gap-5 border-r-4 border-rose-500">
-                <div class="bg-rose-50 p-4 rounded-2xl text-rose-600"><i data-lucide="heart-pulse"></i></div>
-                <div>
-                    <p class="text-xs font-bold text-slate-500 uppercase">نسبة السلامة</p>
-                    <h3 id="statHealth" class="text-3xl font-black text-slate-900">--%</h3>
-                </div>
-            </div>
-        </div>
 
-        <!-- Charts Row -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2 glass-card p-8">
-                <h4 class="text-lg font-bold mb-6 flex items-center gap-2">📈 تتبع مستوى النشاط</h4>
-                <div id="lineChart" class="min-h-[350px]"></div>
-            </div>
-            <div class="glass-card p-8">
-                <h4 class="text-lg font-bold mb-6 flex items-center gap-2">🏥 مؤشر الحالة الصحية</h4>
-                <div id="healthGauge" class="min-h-[350px]"></div>
-            </div>
-        </div>
-
-        <!-- Table -->
-        <div class="glass-card overflow-hidden">
-            <div class="p-6 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
-                <h4 class="font-bold text-lg">سجل التدريب التفصيلي</h4>
-                <div class="relative">
-                    <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-slate-400"></i>
-                    <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="ابحث عن خيل أو برنامج..." class="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cyan-500 w-64">
+            <!-- KPI Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="glass-card p-6 flex items-center gap-5 border-r-4 border-slate-800">
+                    <div class="bg-slate-100 p-4 rounded-2xl text-slate-800"><i data-lucide="list-checks"></i></div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-500 uppercase">إجمالي الحصص</p>
+                        <h3 id="statTotal" class="text-3xl font-black text-slate-900">--</h3>
+                    </div>
+                </div>
+                <div class="glass-card p-6 flex items-center gap-5 border-r-4 border-cyan-500">
+                    <div class="bg-cyan-50 p-4 rounded-2xl text-cyan-600"><i data-lucide="star"></i></div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-500 uppercase">متوسط النشاط</p>
+                        <h3 id="statAvg" class="text-3xl font-black text-slate-900">--</h3>
+                    </div>
+                </div>
+                <div class="glass-card p-6 flex items-center gap-5 border-r-4 border-emerald-500">
+                    <div class="bg-emerald-50 p-4 rounded-2xl text-emerald-600"><i data-lucide="clock"></i></div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-500 uppercase">إجمالي الدقائق</p>
+                        <h3 id="statTime" class="text-3xl font-black text-slate-900">--</h3>
+                    </div>
+                </div>
+                <div class="glass-card p-6 flex items-center gap-5 border-r-4 border-rose-500">
+                    <div class="bg-rose-50 p-4 rounded-2xl text-rose-600"><i data-lucide="heart-pulse"></i></div>
+                    <div>
+                        <p class="text-xs font-bold text-slate-500 uppercase">نسبة السلامة</p>
+                        <h3 id="statHealth" class="text-3xl font-black text-slate-900">--%</h3>
+                    </div>
                 </div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-right" id="mainTable">
-                    <thead class="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase">
-                        <tr>
-                            <th class="px-6 py-4">التاريخ والوقت</th>
-                            <th class="px-6 py-4">اسم الخيل</th>
-                            <th class="px-6 py-4">البرنامج</th>
-                            <th class="px-6 py-4">المدة</th>
-                            <th class="px-6 py-4">الحالة</th>
-                            <th class="px-6 py-4 text-center">المرفقات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody" class="divide-y divide-slate-100">
-                        <!-- Data injected here -->
-                    </tbody>
-                </table>
+
+            <!-- Charts Section 1 -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Line Chart -->
+                <div class="lg:col-span-2 glass-card p-8">
+                    <h4 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#0b2447]">📈 تتبع مستوى النشاط</h4>
+                    <div id="lineChart" class="min-h-[300px]"></div>
+                </div>
+                <!-- Health Gauge -->
+                <div class="glass-card p-8">
+                    <h4 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#0b2447]">🏥 مؤشر الحالة الصحية</h4>
+                    <div id="healthGauge" class="min-h-[300px]"></div>
+                </div>
             </div>
-        </div>
-    </main>
+
+            <!-- Charts Section 2 (New Pie Chart + Calendar) -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Training Distribution -->
+                <div class="glass-card p-8">
+                    <h4 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#0b2447]">🎯 توزيع أنواع التدريب</h4>
+                    <div id="trainingPie" class="min-h-[300px]"></div>
+                </div>
+                <!-- Activity Calendar -->
+                <div class="lg:col-span-2 glass-card p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h4 class="text-lg font-bold flex items-center gap-2 text-[#0b2447]">📅 تقويم التدريب (آخر 30 يوم من الفلترة)</h4>
+                        <div class="flex gap-2 text-xs">
+                            <span class="flex items-center gap-1"><span class="w-3 h-3 bg-[#00a8cc] rounded-sm"></span> تدريب</span>
+                            <span class="flex items-center gap-1"><span class="w-3 h-3 bg-slate-100 border border-dashed border-slate-300 rounded-sm"></span> راحة</span>
+                        </div>
+                    </div>
+                    <!-- Calendar Grid -->
+                    <div id="calendarGrid" class="grid grid-cols-7 gap-2">
+                        <!-- Days injected via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="glass-card overflow-hidden">
+                <div class="p-6 bg-slate-50/50 border-b border-slate-100 flex justify-between items-center">
+                    <h4 class="font-bold text-lg text-[#0b2447]">سجل التدريب التفصيلي</h4>
+                    <div class="relative no-print">
+                        <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-slate-400"></i>
+                        <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="بحث..." class="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cyan-500 w-48">
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right" id="mainTable">
+                        <thead class="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase">
+                            <tr>
+                                <th class="px-6 py-4">التاريخ</th>
+                                <th class="px-6 py-4">اسم الخيل</th>
+                                <th class="px-6 py-4">البرنامج</th>
+                                <th class="px-6 py-4">المدة</th>
+                                <th class="px-6 py-4">الحالة الصحية</th>
+                                <th class="px-6 py-4 text-center no-print">المرفقات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-slate-100 text-sm">
+                            <!-- Data injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Footer for PDF -->
+            <div class="text-center text-xs text-slate-400 mt-8 hidden" id="pdf-footer">
+                تم إنشاء هذا التقرير آلياً بواسطة نظام إدارة مربط جادا | Jada Stables Management System
+            </div>
+            
+        </main>
+    </div>
 
     <script>
-        // الرابط السليم الذي زودتني به
         const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSA8oCh4yfOK5khe_kd0O7gylN9RDKxtnJ7yxouZd7YobQwNisyy5X91oZvXpOnMrFde7Wss0Y4pDhk/pub?output=csv";
         
         let masterData = [];
-        let lineChart, healthGauge;
+        let lineChart, healthGauge, trainingPie;
 
+        // 1. Fetch & Parse Data
         async function fetchData() {
             document.getElementById('loader').classList.remove('hidden');
             Papa.parse(SHEET_URL, {
@@ -150,25 +209,36 @@
                 skipEmptyLines: true,
                 complete: function(results) {
                     masterData = results.data.map(d => {
-                        // تنظيف أسماء الأعمدة من أي مسافات
                         let cleanObj = {};
                         for (let key in d) cleanObj[key.trim()] = d[key].trim();
+                        
+                        // Parse Date explicitly to avoid filter issues
+                        // Assuming CSV date is MM/DD/YYYY HH:mm:ss or similar
+                        // We convert to ISO YYYY-MM-DD for easier comparison
+                        const rawDate = cleanObj["Timestamp"];
+                        const dateObj = new Date(rawDate);
+                        
+                        if (!isNaN(dateObj)) {
+                            cleanObj["dateObj"] = dateObj;
+                            cleanObj["isoDate"] = dateObj.toISOString().split('T')[0];
+                        } else {
+                            cleanObj["dateObj"] = null;
+                            cleanObj["isoDate"] = null;
+                        }
+
                         return cleanObj;
                     });
                     document.getElementById('loader').classList.add('hidden');
                     initDashboard();
                 },
                 error: function(err) {
-                    alert("خطأ في جلب البيانات من جوجل شيت. تأكد من إعدادات النشر.");
-                    document.getElementById('loader').classList.add('hidden');
+                    alert("خطأ في الاتصال بالبيانات");
                 }
             });
         }
 
         function initDashboard() {
             lucide.createIcons();
-            
-            // تعبئة فلتر الخيول
             const horses = [...new Set(masterData.map(d => d["اسم الخيل"]))].filter(h => h);
             const horseSelect = document.getElementById('horseFilter');
             horseSelect.innerHTML = '<option value="all">كل الخيول</option>';
@@ -178,28 +248,41 @@
                 opt.innerText = h;
                 horseSelect.appendChild(opt);
             });
-
             applyFilters();
         }
 
+        // 2. Updated Filter Logic (Fixes Date Issue)
         function applyFilters() {
             const selectedHorse = document.getElementById('horseFilter').value;
-            const start = document.getElementById('startDate').value;
-            const end = document.getElementById('endDate').value;
+            const startStr = document.getElementById('startDate').value; // YYYY-MM-DD
+            const endStr = document.getElementById('endDate').value;     // YYYY-MM-DD
 
             let filtered = masterData.filter(d => {
-                const date = d["Timestamp"] ? d["Timestamp"].split(' ')[0] : null;
+                // Horse Filter
                 const matchHorse = selectedHorse === 'all' || d["اسم الخيل"] === selectedHorse;
-                const matchStart = !start || date >= start;
-                const matchEnd = !end || date <= end;
-                return matchHorse && matchStart && matchEnd;
+                
+                // Date Filter (Robust String Comparison)
+                let matchDate = true;
+                if (d["isoDate"]) {
+                    if (startStr && d["isoDate"] < startStr) matchDate = false;
+                    if (endStr && d["isoDate"] > endStr) matchDate = false;
+                } else {
+                    matchDate = false; // Exclude invalid dates
+                }
+
+                return matchHorse && matchDate;
             });
+
+            // Sort by date desc
+            filtered.sort((a, b) => b.dateObj - a.dateObj);
 
             renderStats(filtered);
             renderCharts(filtered);
+            renderCalendar(filtered); // New Calendar
             renderTable(filtered);
         }
 
+        // 3. Stats
         function renderStats(data) {
             const total = data.length;
             const avg = (data.reduce((sum, d) => sum + parseFloat(d["تقييم نشاط واستجابة الخيل"] || 0), 0) / total || 0).toFixed(1);
@@ -213,47 +296,54 @@
             document.getElementById('statHealth').innerText = healthPercent + "%";
         }
 
+        // 4. Charts (Updated Colors & New Pie Chart)
         function renderCharts(data) {
-            // 1. Line Chart
-            const horses = [...new Set(data.map(d => d["اسم الخيل"]))];
-            const series = horses.map(h => ({
-                name: h,
-                data: data.filter(d => d["اسم الخيل"] === h).map(d => ({
-                    x: d["Timestamp"],
-                    y: parseFloat(d["تقييم نشاط واستجابة الخيل"] || 0)
-                }))
+            const chartFont = 'IBM Plex Sans Arabic';
+
+            // --- Line Chart (Activity) ---
+            // Group by Date to show average per day if multiple horses
+            const aggregated = {};
+            data.forEach(d => {
+                if(!d.isoDate) return;
+                if(!aggregated[d.isoDate]) aggregated[d.isoDate] = [];
+                aggregated[d.isoDate].push(parseFloat(d["تقييم نشاط واستجابة الخيل"] || 0));
+            });
+            
+            const lineData = Object.keys(aggregated).sort().map(date => ({
+                x: date,
+                y: (aggregated[date].reduce((a,b)=>a+b,0) / aggregated[date].length).toFixed(1)
             }));
 
             const lineOptions = {
-                chart: { type: 'line', height: 350, toolbar: { show: false }, zoom: { enabled: false }, fontFamily: 'IBM Plex Sans Arabic' },
-                series: series,
+                chart: { type: 'area', height: 300, toolbar: { show: false }, fontFamily: chartFont },
+                series: [{ name: 'مستوى النشاط', data: lineData }],
                 stroke: { curve: 'smooth', width: 3 },
-                colors: ['#0b2447', '#00a8cc', '#10b981', '#f59e0b', '#ec4899'],
-                xaxis: { type: 'datetime', labels: { style: { colors: '#64748b' } } },
-                yaxis: { max: 5, min: 0, labels: { style: { colors: '#64748b' } } },
+                fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.2 } },
+                colors: ['#00a8cc'],
+                xaxis: { type: 'datetime' },
+                yaxis: { max: 5, min: 0 },
                 grid: { borderColor: '#f1f5f9' },
-                legend: { position: 'top', horizontalAlign: 'right' }
+                dataLabels: { enabled: false }
             };
 
             if(lineChart) lineChart.destroy();
             lineChart = new ApexCharts(document.querySelector("#lineChart"), lineOptions);
             lineChart.render();
 
-            // 2. Health Gauge
+            // --- Health Gauge ---
             const healthyCount = data.filter(d => d["ملاحظات صحية"] === "الخيل سليم تماماً").length;
             const healthPercent = Math.round((healthyCount / data.length) * 100) || 0;
 
             const gaugeOptions = {
-                chart: { type: 'radialBar', height: 350 },
+                chart: { type: 'radialBar', height: 320, fontFamily: chartFont },
                 series: [healthPercent],
                 plotOptions: {
                     radialBar: {
-                        startAngle: -135,
-                        endAngle: 135,
-                        hollow: { size: '70%' },
+                        startAngle: -135, endAngle: 135,
+                        hollow: { size: '65%' },
                         dataLabels: {
-                            name: { show: true, label: 'نسبة السلامة', color: '#64748b', offsetY: 20 },
-                            value: { offsetY: -20, fontSize: '32px', fontWeight: '900', color: '#0b2447', formatter: (val) => val + "%" }
+                            name: { show: true, label: 'مؤشر السلامة', color: '#64748b', offsetY: 20 },
+                            value: { offsetY: -20, fontSize: '30px', fontWeight: 'bold', color: '#0b2447', formatter: (val) => val + "%" }
                         }
                     }
                 },
@@ -264,17 +354,81 @@
             if(healthGauge) healthGauge.destroy();
             healthGauge = new ApexCharts(document.querySelector("#healthGauge"), gaugeOptions);
             healthGauge.render();
+
+            // --- New: Training Types Pie Chart ---
+            const types = {};
+            data.forEach(d => {
+                const t = d["نوع التدريب اليومي"];
+                if(t) types[t] = (types[t] || 0) + 1;
+            });
+
+            const pieOptions = {
+                chart: { type: 'donut', height: 300, fontFamily: chartFont },
+                series: Object.values(types),
+                labels: Object.keys(types),
+                colors: ['#0b2447', '#00a8cc', '#10b981', '#f59e0b', '#ec4899', '#6366f1'],
+                legend: { position: 'bottom' },
+                dataLabels: { enabled: true },
+                plotOptions: { pie: { donut: { size: '60%' } } }
+            };
+
+            if(trainingPie) trainingPie.destroy();
+            trainingPie = new ApexCharts(document.querySelector("#trainingPie"), pieOptions);
+            trainingPie.render();
         }
 
+        // 5. Calendar Visualizer
+        function renderCalendar(data) {
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            
+            // Get dates present in data
+            const activeDates = new Set(data.map(d => d.isoDate));
+            
+            // Simple logic: Show last 28 days from today (or based on filter)
+            // Header for days
+            const daysHeader = ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
+            daysHeader.forEach(d => {
+                grid.innerHTML += `<div class="text-center text-[10px] text-slate-400 font-bold">${d}</div>`;
+            });
+
+            // Generate dates (simplified for visualization)
+            // Finds the range of dates in data or defaults to this month
+            let displayDate = new Date();
+            if(data.length > 0) displayDate = new Date(data[0].dateObj); // Start from latest data
+            displayDate.setDate(displayDate.getDate() - 27); // Go back 4 weeks
+
+            for(let i=0; i<28; i++) {
+                const iso = displayDate.toISOString().split('T')[0];
+                const dayNum = displayDate.getDate();
+                const isActive = activeDates.has(iso);
+                
+                const div = document.createElement('div');
+                div.className = `calendar-day ${isActive ? 'day-active' : 'day-empty'}`;
+                div.innerHTML = `<span>${dayNum}</span>`;
+                if(isActive) div.title = "تم التدريب";
+                
+                grid.appendChild(div);
+                displayDate.setDate(displayDate.getDate() + 1);
+            }
+        }
+
+        // 6. Render Table (DD/MM/YYYY Format)
         function renderTable(data) {
             const body = document.getElementById('tableBody');
             body.innerHTML = '';
             data.forEach(d => {
                 const isHealthy = d["ملاحظات صحية"] === "الخيل سليم تماماً";
+                // Format Date: DD/MM/YYYY HH:MM
+                const dateObj = d.dateObj;
+                const formattedDate = dateObj ? 
+                    `${dateObj.getDate()}/${dateObj.getMonth()+1}/${dateObj.getFullYear()} <span class="text-[10px] text-slate-400 block">${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}</span>` : 
+                    d["Timestamp"];
+
                 const row = `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="px-6 py-4 text-xs text-slate-500 font-medium">${d["Timestamp"]}</td>
-                        <td class="px-6 py-4 font-bold text-slate-800">${d["اسم الخيل"]}</td>
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-50">
+                        <td class="px-6 py-4 font-bold text-slate-700">${formattedDate}</td>
+                        <td class="px-6 py-4 font-bold text-[#0b2447]">${d["اسم الخيل"]}</td>
                         <td class="px-6 py-4"><span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-lg text-[10px] font-bold">${d["نوع التدريب اليومي"]}</span></td>
                         <td class="px-6 py-4 font-black text-cyan-600">${d["مدة الحصة التدريبية بالدقيقة"]} د</td>
                         <td class="px-6 py-4">
@@ -282,7 +436,7 @@
                                 ${d["ملاحظات صحية"]}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-center">
+                        <td class="px-6 py-4 text-center no-print">
                             <a href="${d["يمكنك رفع صور او فيدو للتوثيق"]}" target="_blank" class="text-cyan-500 hover:text-cyan-700 transition">
                                 <i data-lucide="external-link" class="w-4 h-4 mx-auto"></i>
                             </a>
@@ -299,6 +453,35 @@
             const rows = document.querySelectorAll("#tableBody tr");
             rows.forEach(row => {
                 row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none";
+            });
+        }
+
+        // 7. Export to Professional PDF
+        function exportPDF() {
+            const element = document.getElementById('dashboard-container');
+            
+            // Show metadata before print
+            document.getElementById('report-meta').classList.remove('hidden');
+            document.getElementById('printDate').innerText = new Date().toLocaleDateString('ar-SA');
+            document.getElementById('pdf-footer').classList.remove('hidden');
+
+            // Apply PDF-specific style tweaks temporarily via class
+            document.body.classList.add('pdf-mode');
+
+            const opt = {
+                margin:       [10, 10],
+                filename:     `تقرير_مربط_جادا_${new Date().toISOString().split('T')[0]}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Generate PDF
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Reset after print
+                document.getElementById('report-meta').classList.add('hidden');
+                document.getElementById('pdf-footer').classList.add('hidden');
+                document.body.classList.remove('pdf-mode');
             });
         }
 
