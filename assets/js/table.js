@@ -6,15 +6,11 @@ function renderTable(data) {
   data.forEach(d => {
     const isH = (d["ملاحظات صحية"] || '').trim() === "الخيل سليم تماماً";
     const attachment = (d["يمكنك رفع صور او فيدو للتوثيق"] || '').trim();
-    const timeStr = d.dateObj
-      ? `${String(d.dateObj.getHours()).padStart(2, '0')}:${String(d.dateObj.getMinutes()).padStart(2, '0')}`
-      : '';
 
     body.innerHTML += `
       <tr class="hover:bg-slate-50 transition">
         <td class="px-6 py-4 font-bold text-slate-700">
           ${formatDateDMY(d.dateObj)}
-          <span class="text-[10px] text-slate-400 block">${timeStr}</span>
         </td>
         <td class="px-6 py-4 font-bold text-[#0b2447]">${d["اسم الخيل"] || ''}</td>
         <td class="px-6 py-4">

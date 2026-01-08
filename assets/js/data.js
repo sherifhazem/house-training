@@ -30,31 +30,36 @@ function toLocalISODateOnly(dt) {
   return `${y}-${m}-${d}`;
 }
 
-// Robust-ish timestamp parse:
-// - if it parses directly, use it
-// - if Google Forms style (M/D/YYYY HH:mm:ss) it usually parses; still keep date-only key local
-function parseTimestamp(raw) {
+function parseISODateOnly(raw) {
   if (!raw) return null;
-  const dt = new Date(raw);
-  if (!isNaN(dt)) return dt;
+  const trimmed = String(raw).trim();
+  const isoMatch = trimmed.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (isoMatch) {
+    const y = Number(isoMatch[1]);
+    const m = Number(isoMatch[2]);
+    const d = Number(isoMatch[3]);
+    const dt = new Date(y, m - 1, d);
+    return isNaN(dt) ? null : dt;
+  }
 
-  // Fallback manual parse: M/D/YYYY or D/M/YYYY + optional time
-  // Accepts: 1/7/2026 13:05:00 or 07/01/2026 13:05
-  const m = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
-  if (!m) return null;
+  return null;
+}
 
-  const a = Number(m[1]);
-  const b = Number(m[2]);
-  const y = Number(m[3]);
-  const hh = Number(m[4] || 0);
-  const mm = Number(m[5] || 0);
-  const ss = Number(m[6] || 0);
+// Parse sheet date column (D/M/YYYY) and keep date only (ignore time)
+function parseSheetDateOnly(raw) {
+  if (!raw) return null;
+  const trimmed = String(raw).trim();
+  const datePart = trimmed.split(' ')[0];
+  const match = datePart.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+  if (match) {
+    const day = Number(match[1]);
+    const month = Number(match[2]);
+    const year = Number(match[3]);
+    const dt = new Date(year, month - 1, day);
+    return isNaN(dt) ? null : dt;
+  }
 
-  // Assume US if sheet is Google Forms default (M/D/YYYY). If your sheet is D/M/YYYY, swap here.
-  const month = a; // M
-  const day = b; // D
-  const dt2 = new Date(y, month - 1, day, hh, mm, ss);
-  return isNaN(dt2) ? null : dt2;
+  return parseISODateOnly(datePart);
 }
 
 // --- Data ---
@@ -70,8 +75,9 @@ function fetchData() {
         const obj = {};
         for (const k in row) obj[k.trim()] = String(row[k] ?? '').trim();
 
+        const rawDate = obj["التاريخ"];
         const rawTs = obj["Timestamp"];
-        const dt = parseTimestamp(rawTs);
+        const dt = parseSheetDateOnly(rawDate) || parseSheetDateOnly(rawTs);
         if (!dt) return null;
 
         obj.dateObj = dt;
