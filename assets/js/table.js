@@ -6,6 +6,7 @@ function renderTable(data) {
   data.forEach(d => {
     const isH = (d["ملاحظات صحية"] || '').trim() === "الخيل سليم تماماً";
     const attachment = (d["يمكنك رفع صور او فيدو للتوثيق"] || '').trim();
+    const trainerNotes = d["ملاحظات إضافية من المدرب"] || '';
 
     body.innerHTML += `
       <tr class="hover:bg-slate-50 transition">
@@ -22,6 +23,7 @@ function renderTable(data) {
             ${d["ملاحظات صحية"] || ''}
           </span>
         </td>
+        <td class="px-6 py-4 text-slate-600">${trainerNotes}</td>
         <td class="px-6 py-4 text-center no-print">
           ${attachment ? `
             <a href="${attachment}" target="_blank" class="text-cyan-500 hover:text-cyan-700 transition" aria-label="فتح المرفق">
