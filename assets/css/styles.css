@@ -1,0 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;600;700&display=swap');
+
+:root {
+  --navy: #0b2447;
+  --turquoise: #00a8cc;
+}
+
+body {
+  font-family: 'IBM Plex Sans Arabic', sans-serif;
+  background-color: #f1f5f9;
+}
+
+.glass-card {
+  background: white;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  page-break-inside: avoid;
+}
+
+.navy-gradient {
+  background: linear-gradient(135deg, var(--navy) 0%, #19376d 100%);
+}
+
+/* Calendar */
+.calendar-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-align: center;
+  padding-bottom: 8px;
+}
+
+.calendar-day {
+  height: 42px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.day-training {
+  background-color: var(--turquoise);
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 168, 204, 0.3);
+}
+
+.day-rest {
+  background-color: #f1f5f9;
+  color: #94a3b8;
+  border: 1px dashed #cbd5e1;
+}
+
+/* Force date inputs to display as DD/MM/YYYY using a wrapper view (since native date inputs vary by device) */
+.date-hint {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 6px;
+  font-weight: 700;
+}
+
+/* PDF Mode */
+.pdf-mode {
+  background: white !important;
+}
+
+.pdf-mode .no-print,
+.pdf-mode nav {
+  display: none !important;
+}
+
+.pdf-mode .glass-card {
+  box-shadow: none !important;
+  border: 1px solid #ddd !important;
+  border-radius: 8px;
+}
+
+.pdf-mode #dashboard-container {
+  padding: 0 !important;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
