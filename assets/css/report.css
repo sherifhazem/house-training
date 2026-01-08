@@ -49,16 +49,23 @@ body {
 
 .page {
   width: 210mm;
-  min-height: 297mm;
   margin: 0 auto 24px;
   padding: 18mm 14mm;
   background: white;
   border: 1px solid #e2e8f0;
-  page-break-after: always;
+  break-after: auto;
+  page-break-after: auto;
+  /* Allow content-driven pagination; avoids html2pdf blank pages from forced heights/breaks. */
 }
 
 .page:last-child {
-  page-break-after: auto;
+  margin-bottom: 0;
+}
+
+/* Apply ONLY when a deliberate page split is needed. */
+.page-break {
+  break-before: page;
+  page-break-before: always;
 }
 
 .cover-page {
@@ -244,7 +251,8 @@ body {
   display: table-header-group;
 }
 
-.detail-table tr {
+table tr {
+  break-inside: avoid;
   page-break-inside: avoid;
 }
 
