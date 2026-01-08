@@ -123,16 +123,32 @@ body {
   }
 
   .filter-card {
-    padding: 16px;
-    gap: 12px;
+    padding: 12px;
+    gap: 10px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
   }
 
   .filter-card .flex-1 {
     min-width: 100%;
   }
 
-  .filter-card button {
-    width: 100%;
+  .filter-card label {
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+
+  .filter-card input,
+  .filter-card select {
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 12px;
+  }
+
+  .filter-card .date-hint {
+    margin-top: 4px;
+    font-size: 10px;
   }
 
   .kpi-grid {
