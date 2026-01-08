@@ -17,8 +17,8 @@
 <body class="text-slate-900 overflow-x-hidden">
   <div id="dashboard-container">
     <!-- Navigation -->
-    <nav class="navy-gradient text-white p-5 shadow-2xl sticky top-0 z-50 no-print">
-      <div class="container mx-auto flex justify-between items-center">
+    <nav class="site-nav navy-gradient text-white p-5 shadow-2xl sticky top-0 z-50 no-print">
+      <div class="nav-inner container mx-auto flex justify-between items-center">
         <div class="flex items-center gap-4">
           <div class="bg-cyan-500 p-2.5 rounded-2xl shadow-lg">
             <i data-lucide="horse" class="w-7 h-7 text-white"></i>
@@ -40,7 +40,7 @@
     <main class="container mx-auto p-4 md:p-8 space-y-8">
 
       <!-- Filters -->
-      <div class="glass-card p-6 flex flex-wrap gap-4 items-end no-print">
+      <div class="filter-card glass-card p-6 flex flex-wrap gap-4 items-end no-print">
         <div class="flex-1 min-w-[250px]">
           <label class="block text-xs font-bold text-slate-500 mb-2">النطاق الزمني</label>
           <div class="flex gap-2">
@@ -80,20 +80,20 @@
       </div>
 
       <!-- KPI Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="glass-card p-6 border-r-4 border-slate-800">
+      <div class="kpi-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="kpi-card glass-card p-6 border-r-4 border-slate-800">
           <p class="text-xs font-bold text-slate-500 uppercase mb-1">إجمالي الحصص</p>
           <h3 id="statTotal" class="text-4xl font-black text-slate-900">--</h3>
         </div>
-        <div class="glass-card p-6 border-r-4 border-cyan-500">
+        <div class="kpi-card glass-card p-6 border-r-4 border-cyan-500">
           <p class="text-xs font-bold text-slate-500 uppercase mb-1">متوسط النشاط</p>
           <h3 id="statAvg" class="text-4xl font-black text-slate-900">--</h3>
         </div>
-        <div class="glass-card p-6 border-r-4 border-emerald-500">
+        <div class="kpi-card glass-card p-6 border-r-4 border-emerald-500">
           <p class="text-xs font-bold text-slate-500 uppercase mb-1">دقائق التدريب</p>
           <h3 id="statTime" class="text-4xl font-black text-slate-900">--</h3>
         </div>
-        <div class="glass-card p-6 border-r-4 border-rose-500">
+        <div class="kpi-card glass-card p-6 border-r-4 border-rose-500">
           <p class="text-xs font-bold text-slate-500 uppercase mb-1">مؤشر السلامة</p>
           <h3 id="statHealth" class="text-4xl font-black text-slate-900">--%</h3>
         </div>
@@ -101,23 +101,23 @@
 
       <!-- Main Charts Row -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div class="lg:col-span-2 glass-card p-8">
+        <div class="chart-card lg:col-span-2 glass-card p-8">
           <h4 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#0b2447]">📈 مستوى النشاط اليومي (تاريخ فقط)</h4>
-          <div id="lineChart" class="min-h-[300px]"></div>
+          <div id="lineChart" class="chart-area min-h-[300px]"></div>
         </div>
-        <div class="glass-card p-8">
+        <div class="chart-card glass-card p-8">
           <h4 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#0b2447]">🏥 سلامة الخيل</h4>
-          <div id="healthGauge" class="min-h-[300px]"></div>
+          <div id="healthGauge" class="chart-area min-h-[300px]"></div>
         </div>
       </div>
 
       <!-- Second Row: Pie Chart & Calendar -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div class="glass-card p-8">
+        <div class="chart-card glass-card p-8">
           <h4 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#0b2447]">🎯 أنواع البرامج</h4>
-          <div id="trainingPie" class="min-h-[300px]"></div>
+          <div id="trainingPie" class="chart-area min-h-[300px]"></div>
         </div>
-        <div class="lg:col-span-2 glass-card p-8">
+        <div class="calendar-card lg:col-span-2 glass-card p-8">
           <div class="flex items-center justify-between mb-4">
             <h4 class="text-lg font-bold flex items-center gap-2 text-[#0b2447]">📅 تقويم التدريب (السبت بداية الأسبوع)</h4>
             <div class="flex items-center gap-3 text-xs font-bold text-slate-500">
@@ -131,10 +131,10 @@
       </div>
 
       <!-- Detailed Table -->
-      <div class="glass-card overflow-hidden">
-        <div class="p-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center no-print">
+      <div class="table-card glass-card overflow-hidden">
+        <div class="table-header p-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center no-print">
           <h4 class="font-bold text-lg text-[#0b2447]">السجل التفصيلي</h4>
-          <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="بحث سريع..." class="px-4 py-2 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-cyan-500 w-64">
+          <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="بحث سريع..." class="table-search px-4 py-2 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-cyan-500 w-64">
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-right" id="mainTable">
