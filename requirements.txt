@@ -1,4 +1,1 @@
-streamlit>=1.41.1
-pandas
-plotly
-st-gsheets-connection
+
