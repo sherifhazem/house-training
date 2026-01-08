@@ -20,8 +20,8 @@
     <nav class="site-nav navy-gradient text-white p-5 shadow-2xl sticky top-0 z-50 no-print">
       <div class="nav-inner container mx-auto flex justify-between items-center">
         <div class="flex items-center gap-4">
-          <div class="bg-cyan-500 p-2.5 rounded-2xl shadow-lg">
-            <i data-lucide="horse" class="w-7 h-7 text-white"></i>
+          <div class="logo-shell bg-white/10 p-2.5 rounded-2xl shadow-lg">
+            <img src="jada350.png" alt="شعار مربط جادا" class="nav-logo w-12 h-12 object-contain" />
           </div>
           <div>
             <h1 class="text-xl font-bold tracking-tight">تحليل التدريب اليومي لمربط جادا</h1>
@@ -68,10 +68,13 @@
       <!-- PDF Report Header -->
       <div id="report-meta" class="hidden border-b-4 border-[#0b2447] pb-6 mb-8">
         <div class="flex justify-between items-end">
-          <div>
-            <h1 class="text-3xl font-black text-[#0b2447] mb-2">تقرير الأداء الدوري - مربط جادا</h1>
-            <p class="text-slate-600 font-bold">تاريخ التقرير: <span id="printDate"></span></p>
-            <p class="text-slate-600 font-bold">نطاق التقرير: <span id="reportRange"></span></p>
+          <div class="flex items-end gap-4">
+            <img src="jada350.png" alt="شعار مربط جادا" class="w-16 h-16 object-contain" />
+            <div>
+              <h1 class="text-3xl font-black text-[#0b2447] mb-2">تقرير الأداء الدوري - مربط جادا</h1>
+              <p class="text-slate-600 font-bold">تاريخ التقرير: <span id="printDate"></span></p>
+              <p class="text-slate-600 font-bold">نطاق التقرير: <span id="reportRange"></span></p>
+            </div>
           </div>
           <div class="text-right">
             <p class="text-xs font-bold text-slate-400">نظام الإدارة الموحد</p>
@@ -100,7 +103,7 @@
       </div>
 
       <!-- Main Charts Row -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="chart-grid grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div class="chart-card lg:col-span-2 glass-card p-8">
           <h4 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#0b2447]">📈 مستوى النشاط اليومي </h4>
           <div id="lineChart" class="chart-area min-h-[300px]"></div>
@@ -112,7 +115,7 @@
       </div>
 
       <!-- Second Row: Pie Chart & Calendar -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="chart-grid grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div class="chart-card glass-card p-8">
           <h4 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#0b2447]">🎯 أنواع البرامج</h4>
           <div id="trainingPie" class="chart-area min-h-[300px]"></div>
