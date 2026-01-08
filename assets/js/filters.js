@@ -25,7 +25,7 @@ function applyFilters() {
 
   renderStats(filtered);
   renderCharts(filtered);
-  renderCalendar(filtered);
+  renderCalendar(filtered, start, end);
   renderTable(filtered);
 
   // Report range text

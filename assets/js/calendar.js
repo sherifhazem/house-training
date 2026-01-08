@@ -1,5 +1,5 @@
 /* Calendar rendering (Saturday week start) */
-function renderCalendar(data) {
+function renderCalendar(data, startISO, endISO) {
   const grid = document.getElementById('calendarGrid');
   grid.innerHTML = '';
 
@@ -10,16 +10,37 @@ function renderCalendar(data) {
 
   const trainingDays = new Set(data.map(d => d.isoDate).filter(Boolean));
 
-  // Show month of latest record within filtered data
-  const latest = new Date(data[0].dateObj);
-  const year = latest.getFullYear();
-  const month = latest.getMonth();
+  const parseISO = (iso) => {
+    if (!iso) return null;
+    const parts = String(iso).split('-').map(Number);
+    if (parts.length !== 3) return null;
+    const [y, m, d] = parts;
+    if (!y || !m || !d) return null;
+    return new Date(y, m - 1, d);
+  };
 
-  const first = new Date(year, month, 1);
-  const last = new Date(year, month + 1, 0);
+  const safeStart = parseISO(startISO);
+  const safeEnd = parseISO(endISO);
+  const dayMs = 24 * 60 * 60 * 1000;
+  const rangeDays = safeStart && safeEnd ? Math.floor((safeEnd - safeStart) / dayMs) + 1 : null;
 
-  const monthsAr = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
-  document.getElementById('calendarTitle').innerText = `${monthsAr[month]} ${year}`;
+  let windowStart;
+  let windowEnd;
+
+  if (safeStart && safeEnd && rangeDays && rangeDays <= 30) {
+    windowStart = safeStart;
+    windowEnd = safeEnd;
+  } else {
+    const latestISO = data[0]?.isoDate;
+    windowEnd = parseISO(latestISO) || safeEnd || new Date();
+    windowStart = new Date(windowEnd);
+    windowStart.setDate(windowEnd.getDate() - 29);
+  }
+
+  document.getElementById('calendarTitle').innerText = `${formatDateDMY(windowStart)} إلى ${formatDateDMY(windowEnd)}`;
+
+  const first = new Date(windowStart.getFullYear(), windowStart.getMonth(), windowStart.getDate());
+  const last = new Date(windowEnd.getFullYear(), windowEnd.getMonth(), windowEnd.getDate());
 
   // Saturday index mapping:
   // JS getDay(): Sun=0..Sat=6
@@ -37,16 +58,15 @@ function renderCalendar(data) {
     grid.innerHTML += '<div></div>';
   }
 
-  // Month days: only training/rest (no other states)
-  for (let day = 1; day <= last.getDate(); day++) {
-    const current = new Date(year, month, day);
+  // Range days: only training/rest (no other states)
+  for (let current = new Date(first); current <= last; current = new Date(current.getTime() + dayMs)) {
     const iso = toLocalISODateOnly(current);
     const isTraining = trainingDays.has(iso);
 
     const div = document.createElement('div');
     div.className = `calendar-day ${isTraining ? 'day-training' : 'day-rest'}`;
     div.title = isTraining ? 'يوم تدريب' : 'يوم راحة';
-    div.textContent = day;
+    div.textContent = current.getDate();
     grid.appendChild(div);
   }
 }
