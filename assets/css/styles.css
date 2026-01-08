@@ -102,8 +102,15 @@ body {
 
 .pdf-mode main.container {
   max-width: 210mm;
-  padding: 12mm 10mm 16mm !important;
+  padding: 8mm 8mm 12mm !important;
   background: white;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pdf-mode main.container > :not([hidden]) ~ :not([hidden]) {
+  margin-top: 0 !important;
 }
 
 .pdf-mode .kpi-grid {
@@ -118,6 +125,8 @@ body {
 .pdf-mode .chart-grid {
   grid-template-columns: 1fr;
   gap: 16px;
+  page-break-inside: avoid;
+  break-inside: avoid;
 }
 
 .pdf-mode .chart-card,
@@ -126,6 +135,30 @@ body {
 .pdf-mode .kpi-card,
 .pdf-mode #report-meta,
 .pdf-mode #pdf-footer {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.pdf-mode .pdf-break-after {
+  break-after: page;
+  page-break-after: always;
+}
+
+.pdf-mode #report-meta {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.pdf-mode table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pdf-mode thead {
+  display: table-header-group;
+}
+
+.pdf-mode tr {
   page-break-inside: avoid;
   break-inside: avoid;
 }
@@ -141,7 +174,7 @@ body {
 
 @page {
   size: A4;
-  margin: 12mm;
+  margin: 8mm;
 }
 
 @media (max-width: 1024px) {

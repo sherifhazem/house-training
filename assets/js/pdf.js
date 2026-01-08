@@ -14,7 +14,7 @@ async function exportPDF() {
   document.getElementById('printDate').innerText = formatDateDMY(new Date());
 
   const opt = {
-    margin: [10, 10],
+    margin: [0, 0, 0, 0],
     filename: `تقرير_جادا_${formatDateDMY(new Date()).replace(/\//g, '-')}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: {
@@ -24,7 +24,7 @@ async function exportPDF() {
       backgroundColor: '#ffffff'
     },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['css', 'legacy'] }
+    pagebreak: { mode: ['css', 'legacy'], after: '.pdf-break-after' }
   };
 
   try {
