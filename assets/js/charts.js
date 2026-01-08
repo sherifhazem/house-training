@@ -24,13 +24,26 @@ function renderCharts(data) {
   });
 
   const lineOptions = {
-    chart: { type: 'area', height: 300, toolbar: { show: false }, fontFamily: font },
+    chart: {
+      type: 'area',
+      height: 300,
+      toolbar: { show: false },
+      zoom: { enabled: false },
+      selection: { enabled: false },
+      animations: { enabled: false },
+      fontFamily: font
+    },
     series: [{ name: 'مستوى النشاط', data: seriesData }],
     colors: ['#00a8cc'],
     stroke: { curve: 'smooth', width: 3 },
     dataLabels: { enabled: false },
+    states: {
+      active: { filter: { type: 'none' } },
+      hover: { filter: { type: 'none' } }
+    },
     xaxis: {
       type: 'category',
+      tickPlacement: 'on',
       labels: {
         formatter: (val) => {
           // val is ISO YYYY-MM-DD
@@ -56,7 +69,19 @@ function renderCharts(data) {
       }
     },
     yaxis: { max: 5, min: 0 },
-    grid: { borderColor: '#eef2f7' }
+    grid: { borderColor: '#eef2f7' },
+    responsive: [
+      {
+        breakpoint: 768,
+        options: {
+          chart: { height: 240 },
+          xaxis: {
+            tickAmount: Math.min(4, seriesData.length),
+            labels: { rotate: -45, hideOverlappingLabels: true }
+          }
+        }
+      }
+    ]
   };
 
   if (lineChart) lineChart.destroy();
