@@ -10,7 +10,6 @@
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
@@ -29,9 +28,9 @@
           </div>
         </div>
         <div class="flex gap-3 items-center">
-          <button onclick="exportPDF()" class="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2 border border-white/20">
-            <i data-lucide="file-text" class="w-4 h-4"></i> تصدير تقرير PDF
-          </button>
+          <a href="report.html" class="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2 border border-white/20">
+            <i data-lucide="file-text" class="w-4 h-4"></i> فتح تقرير الطباعة
+          </a>
           <div id="loader" class="hidden py-2"><div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div></div>
         </div>
       </div>
@@ -65,22 +64,6 @@
         <button onclick="applyFilters()" class="bg-slate-800 text-white px-8 py-3.5 rounded-xl font-bold transition-all hover:bg-black">تحديث العرض</button>
       </div>
 
-      <!-- PDF Report Header -->
-      <div id="report-meta" class="hidden border-b-4 border-[#0b2447] pb-6 mb-8">
-        <div class="flex justify-between items-end">
-          <div class="flex items-end gap-4">
-            <img src="jada350.png" alt="شعار مربط جادا" class="w-16 h-16 object-contain" />
-            <div>
-              <h1 class="text-3xl font-black text-[#0b2447] mb-2">تقرير الأداء الدوري - مربط جادا</h1>
-              <p class="text-slate-600 font-bold">تاريخ التقرير: <span id="printDate"></span></p>
-              <p class="text-slate-600 font-bold">نطاق التقرير: <span id="reportRange"></span></p>
-            </div>
-          </div>
-          <div class="text-right">
-            <p class="text-xs font-bold text-slate-400">نظام الإدارة الموحد</p>
-          </div>
-        </div>
-      </div>
 
       <!-- KPI Cards -->
       <div class="kpi-grid grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -103,7 +86,7 @@
       </div>
 
       <!-- Main Charts Row -->
-      <div class="chart-grid grid grid-cols-1 lg:grid-cols-3 gap-8 pdf-break-after">
+      <div class="chart-grid grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div class="chart-card lg:col-span-2 glass-card p-8">
           <h4 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#0b2447]">📈 مستوى النشاط اليومي </h4>
           <div id="lineChart" class="chart-area min-h-[300px]"></div>
@@ -115,7 +98,7 @@
       </div>
 
       <!-- Second Row: Pie Chart & Calendar -->
-      <div class="chart-grid grid grid-cols-1 lg:grid-cols-3 gap-8 pdf-break-after">
+      <div class="chart-grid grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div class="chart-card glass-card p-8">
           <h4 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#0b2447]">🎯 أنواع البرامج</h4>
           <div id="trainingPie" class="chart-area min-h-[300px]"></div>
@@ -156,9 +139,6 @@
         </div>
       </div>
 
-      <div id="pdf-footer" class="hidden text-center text-[10px] text-slate-400 mt-10 pt-5 border-t">
-        جميع الحقوق محفوظة - مربط جادا للأصالة © 2026 | تم التصدير بواسطة النظام الذكي
-      </div>
     </main>
   </div>
 
@@ -167,7 +147,6 @@
   <script src="assets/js/charts.js"></script>
   <script src="assets/js/calendar.js"></script>
   <script src="assets/js/table.js"></script>
-  <script src="assets/js/pdf.js"></script>
   <script src="assets/js/app.js"></script>
 </body>
 </html>

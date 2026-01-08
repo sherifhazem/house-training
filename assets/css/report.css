@@ -1,0 +1,269 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;600;700&display=swap');
+
+:root {
+  --navy: #0b2447;
+  --turquoise: #00a8cc;
+  --light: #f8fafc;
+  --text: #1f2937;
+  --muted: #64748b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'IBM Plex Sans Arabic', sans-serif;
+  background: #e5e7eb;
+  color: var(--text);
+}
+
+.report-toolbar {
+  background: var(--navy);
+  color: white;
+  padding: 12px 20px;
+  text-align: center;
+}
+
+.report-button {
+  background: white;
+  color: var(--navy);
+  border: none;
+  padding: 10px 18px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.report-status {
+  display: inline-block;
+  margin-right: 12px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+#report-container {
+  padding: 24px 0 40px;
+}
+
+.page {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto 24px;
+  padding: 18mm 14mm;
+  background: white;
+  border: 1px solid #e2e8f0;
+  page-break-after: always;
+}
+
+.page:last-child {
+  page-break-after: auto;
+}
+
+.cover-page {
+  text-align: center;
+}
+
+.cover-block {
+  margin-top: 40mm;
+}
+
+.cover-logo {
+  width: 110px;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+.cover-title {
+  margin: 0 0 12px;
+  font-size: 28px;
+  color: var(--navy);
+}
+
+.cover-subtitle {
+  margin: 0 0 30px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.meta-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20mm;
+}
+
+.meta-table th,
+.meta-table td {
+  border: 1px solid #e2e8f0;
+  padding: 12px 14px;
+  font-size: 14px;
+  text-align: right;
+}
+
+.meta-table th {
+  width: 35%;
+  background: var(--light);
+  color: var(--navy);
+}
+
+.section-title {
+  margin: 0 0 20px;
+  font-size: 20px;
+  color: var(--navy);
+  border-right: 6px solid var(--turquoise);
+  padding-right: 10px;
+}
+
+.kpi-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.kpi-table td {
+  border: 1px solid #e2e8f0;
+  padding: 26px 18px;
+  width: 50%;
+  background: #f9fbfd;
+}
+
+.kpi-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.kpi-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.chart-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.chart-table td {
+  border: 1px solid #e2e8f0;
+  padding: 18px;
+}
+
+.chart-title {
+  margin: 0 0 12px;
+  font-size: 16px;
+  color: var(--navy);
+}
+
+.chart-shell {
+  border: 1px dashed #cbd5f5;
+  background: #fbfdff;
+  padding: 12px;
+  text-align: center;
+}
+
+.calendar-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.calendar-table th,
+.calendar-table td {
+  border: 1px solid #e2e8f0;
+  padding: 10px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.calendar-table th {
+  background: var(--light);
+  color: var(--navy);
+}
+
+.calendar-table td.training {
+  background: rgba(0, 168, 204, 0.15);
+  color: var(--navy);
+  font-weight: 700;
+}
+
+.calendar-table td.rest {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+.legend-table {
+  margin-top: 14px;
+}
+
+.legend-table td {
+  padding-left: 20px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.legend-box {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-left: 6px;
+  vertical-align: middle;
+  border-radius: 3px;
+}
+
+.legend-box.training {
+  background: rgba(0, 168, 204, 0.6);
+}
+
+.legend-box.rest {
+  background: #f1f5f9;
+  border: 1px dashed #cbd5e1;
+}
+
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.detail-table th,
+.detail-table td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  text-align: right;
+}
+
+.detail-table th {
+  background: var(--light);
+  color: var(--navy);
+  font-weight: 700;
+}
+
+.detail-table thead {
+  display: table-header-group;
+}
+
+.detail-table tr {
+  page-break-inside: avoid;
+}
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  body {
+    background: white;
+  }
+
+  .report-toolbar {
+    display: none;
+  }
+
+  .page {
+    margin: 0;
+    border: none;
+  }
+}

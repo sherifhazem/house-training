@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>تقرير مربط جادا الاحترافي</title>
+  <link rel="stylesheet" href="assets/css/report.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+  <div class="report-toolbar">
+    <button type="button" class="report-button" onclick="exportReport()">تصدير PDF احترافي</button>
+    <span id="reportStatus" class="report-status">جارٍ تحميل البيانات…</span>
+  </div>
+
+  <div id="report-container">
+    <section class="page cover-page">
+      <div class="cover-block">
+        <img src="jada350.png" alt="شعار مربط جادا" class="cover-logo" />
+        <h1 class="cover-title">التقرير الاحترافي لمربط جادا</h1>
+        <p class="cover-subtitle">طبقة التقارير الرسمية - طباعة أرشيفية</p>
+      </div>
+      <table class="meta-table">
+        <tbody>
+          <tr>
+            <th>اسم المربط</th>
+            <td>مربط جادا</td>
+          </tr>
+          <tr>
+            <th>نطاق التقرير</th>
+            <td id="reportRange">--/--/----</td>
+          </tr>
+          <tr>
+            <th>تاريخ الإصدار</th>
+            <td id="issueDate">--/--/----</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="page kpi-page">
+      <h2 class="section-title">مؤشرات الأداء الرئيسية</h2>
+      <table class="kpi-table">
+        <tbody>
+          <tr>
+            <td>
+              <div class="kpi-label">إجمالي الحصص</div>
+              <div id="kpiTotal" class="kpi-value">--</div>
+            </td>
+            <td>
+              <div class="kpi-label">متوسط النشاط</div>
+              <div id="kpiAvg" class="kpi-value">--</div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="kpi-label">دقائق التدريب</div>
+              <div id="kpiMinutes" class="kpi-value">--</div>
+            </td>
+            <td>
+              <div class="kpi-label">مؤشر السلامة</div>
+              <div id="kpiHealth" class="kpi-value">--%</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="page charts-page">
+      <h2 class="section-title">الرسوم الثابتة</h2>
+      <table class="chart-table">
+        <tbody>
+          <tr>
+            <td>
+              <h3 class="chart-title">نشاط التدريب اليومي</h3>
+              <div class="chart-shell">
+                <svg id="activityChart" width="520" height="220" viewBox="0 0 520 220" aria-label="مخطط نشاط التدريب"></svg>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <h3 class="chart-title">مؤشر السلامة</h3>
+              <div class="chart-shell">
+                <svg id="healthChart" width="240" height="200" viewBox="0 0 240 200" aria-label="مؤشر السلامة"></svg>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="page calendar-page">
+      <h2 class="section-title">تقويم التدريب</h2>
+      <table class="calendar-table">
+        <thead>
+          <tr>
+            <th>السبت</th>
+            <th>الأحد</th>
+            <th>الإثنين</th>
+            <th>الثلاثاء</th>
+            <th>الأربعاء</th>
+            <th>الخميس</th>
+            <th>الجمعة</th>
+          </tr>
+        </thead>
+        <tbody id="calendarBody"></tbody>
+      </table>
+      <table class="legend-table">
+        <tbody>
+          <tr>
+            <td><span class="legend-box training"></span> تدريب</td>
+            <td><span class="legend-box rest"></span> راحة</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="page table-page">
+      <h2 class="section-title">السجل التفصيلي</h2>
+      <table class="detail-table">
+        <thead>
+          <tr>
+            <th>التاريخ</th>
+            <th>الخيل</th>
+            <th>البرنامج</th>
+            <th>المدة</th>
+            <th>الحالة الصحية</th>
+          </tr>
+        </thead>
+        <tbody id="detailTableBody"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/report.js"></script>
+</body>
+</html>

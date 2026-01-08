@@ -63,8 +63,16 @@ function parseSheetDateOnly(raw) {
 }
 
 // --- Data ---
-function fetchData() {
-  document.getElementById('loader').classList.remove('hidden');
+function setLoadingState(isLoading) {
+  const loader = document.getElementById('loader');
+  if (!loader) return;
+  loader.classList.toggle('hidden', !isLoading);
+}
+
+function fetchData(options = {}) {
+  const { onSuccess, onError, onLoading } = options;
+  const setLoading = typeof onLoading === 'function' ? onLoading : setLoadingState;
+  setLoading(true);
 
   Papa.parse(SHEET_URL, {
     download: true,
@@ -89,11 +97,19 @@ function fetchData() {
         return obj;
       }).filter(Boolean);
 
-      document.getElementById('loader').classList.add('hidden');
-      init();
+      setLoading(false);
+      if (typeof onSuccess === 'function') {
+        onSuccess();
+      } else if (typeof init === 'function') {
+        init();
+      }
     },
     error: function () {
-      document.getElementById('loader').classList.add('hidden');
+      setLoading(false);
+      if (typeof onError === 'function') {
+        onError();
+        return;
+      }
       alert("تعذر تحميل البيانات. تأكد من نشر Google Sheet كـ CSV.");
     }
   });
