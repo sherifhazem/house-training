@@ -32,6 +32,7 @@ body {
   border: 1px solid #e2e8f0;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   page-break-inside: avoid;
+  break-inside: avoid;
 }
 
 .navy-gradient {
@@ -97,6 +98,50 @@ body {
 
 .pdf-mode #dashboard-container {
   padding: 0 !important;
+}
+
+.pdf-mode main.container {
+  max-width: 210mm;
+  padding: 12mm 10mm 16mm !important;
+  background: white;
+}
+
+.pdf-mode .kpi-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pdf-mode .chart-area {
+  min-height: 240px !important;
+}
+
+.pdf-mode .chart-grid {
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.pdf-mode .chart-card,
+.pdf-mode .calendar-card,
+.pdf-mode .table-card,
+.pdf-mode .kpi-card,
+.pdf-mode #report-meta,
+.pdf-mode #pdf-footer {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+.pdf-mode .table-header {
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.pdf-mode .table-card {
+  margin-top: 8px;
+}
+
+@page {
+  size: A4;
+  margin: 12mm;
 }
 
 @media (max-width: 1024px) {
