@@ -14,13 +14,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <!-- html2pdf -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <!-- ربط ملف التنسيق -->
+    <!-- ربط ملف التنسيق الخارجي -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="overflow-x-hidden">
 
     <div id="dashboard-container">
-        <!-- شريط التنقل العلوي -->
+        <!-- الهيدر العلوي -->
         <nav class="navy-gradient text-white p-5 shadow-2xl sticky top-0 z-50 no-print">
             <div class="container mx-auto flex justify-between items-center">
                 <div class="flex items-center gap-4">
@@ -29,12 +29,12 @@
                     </div>
                     <div>
                         <h1 class="text-xl font-bold">نظام مربط جادا الموحد</h1>
-                        <p class="text-[9px] text-cyan-300 opacity-80 uppercase tracking-widest">Management & Analysis System</p>
+                        <p class="text-[9px] text-cyan-300 opacity-80 uppercase tracking-widest">Advanced Management System</p>
                     </div>
                 </div>
                 <div class="flex gap-3">
                     <button onclick="exportPDF()" class="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 border border-white/20">
-                        <i data-lucide="printer" class="w-4 h-4"></i> تصدير PDF
+                        <i data-lucide="file-text" class="w-4 h-4"></i> تصدير تقرير PDF
                     </button>
                     <div id="loader" class="hidden py-2"><div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div></div>
                 </div>
@@ -45,13 +45,13 @@
             
             <!-- أزرار التبويبات -->
             <div class="flex gap-2 p-2 bg-slate-200/50 rounded-2xl no-print w-fit mx-auto mb-6">
-                <div onclick="switchTab('analysis')" id="tab-analysis" class="tab-btn active">تحليل التدريب اليومي</div>
-                <div onclick="switchTab('records')" id="tab-records" class="tab-btn">سجل بيانات الخيل</div>
+                <div onclick="switchTab('analysis')" id="tab-analysis" class="tab-btn active text-center">تحليل التدريب اليومي</div>
+                <div onclick="switchTab('records')" id="tab-records" class="tab-btn text-center">سجل بيانات الخيل</div>
             </div>
 
             <!-- تبويب التحليل اليومي -->
             <div id="content-analysis" class="tab-content space-y-8">
-                <!-- فلاتر البحث -->
+                <!-- الفلاتر -->
                 <div class="glass-card p-6 flex flex-wrap gap-4 items-end no-print">
                     <div class="flex-1 min-w-[250px]">
                         <label class="block text-xs font-bold text-slate-500 mb-2">النطاق الزمني</label>
@@ -61,7 +61,7 @@
                         </div>
                     </div>
                     <div class="flex-1 min-w-[150px]">
-                        <label class="block text-xs font-bold text-slate-500 mb-2">اسم الخيل</label>
+                        <label class="block text-xs font-bold text-slate-500 mb-2 text-right">اسم الخيل</label>
                         <select id="horseFilter" onchange="applyFilters()" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-cyan-500 text-sm appearance-none">
                             <option value="all">كل الخيول</option>
                         </select>
@@ -70,102 +70,109 @@
                 </div>
 
                 <!-- ترويسة التقرير (تظهر في الـ PDF فقط) -->
-                <div id="report-header" class="hidden border-b-4 border-[#0b2447] pb-6 mb-8">
-                    <h1 class="text-3xl font-black text-[#0b2447] mb-2">تقرير الأداء والتدريب الموحد</h1>
-                    <p class="text-slate-600 font-bold">تاريخ التقرير: <span id="reportDateText"></span></p>
+                <div id="report-header" class="hidden border-b-4 border-[#0b2447] pb-6 mb-8 text-right">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h1 class="text-3xl font-black text-[#0b2447] mb-2">تقرير الأداء الدوري لمربط جادا</h1>
+                            <p class="text-slate-600 font-bold text-sm">تاريخ التقرير: <span id="reportDateText"></span></p>
+                        </div>
+                        <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Official Record</div>
+                    </div>
                 </div>
 
                 <!-- كروت الإحصائيات -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="glass-card p-6 border-r-4 border-slate-800">
+                    <div class="glass-card p-6 border-r-4 border-slate-800 text-right">
                         <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">إجمالي الحصص</p>
-                        <h3 id="statTotal" class="text-4xl font-black text-slate-900">--</h3>
+                        <h3 id="statTotal" class="text-4xl font-black text-slate-900 leading-none">--</h3>
                     </div>
-                    <div class="glass-card p-6 border-r-4 border-cyan-500">
+                    <div class="glass-card p-6 border-r-4 border-cyan-500 text-right">
                         <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">متوسط النشاط</p>
-                        <h3 id="statAvg" class="text-4xl font-black text-slate-900">--</h3>
+                        <h3 id="statAvg" class="text-4xl font-black text-slate-900 leading-none">--</h3>
                     </div>
-                    <div class="glass-card p-6 border-r-4 border-emerald-500">
+                    <div class="glass-card p-6 border-r-4 border-emerald-500 text-right">
                         <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">دقائق التدريب</p>
-                        <h3 id="statTime" class="text-4xl font-black text-slate-900">--</h3>
+                        <h3 id="statTime" class="text-4xl font-black text-slate-900 leading-none">--</h3>
                     </div>
-                    <div class="glass-card p-6 border-r-4 border-rose-500">
+                    <div class="glass-card p-6 border-r-4 border-rose-500 text-right">
                         <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">مؤشر السلامة</p>
-                        <h3 id="statHealth" class="text-4xl font-black text-slate-900">--%</h3>
+                        <h3 id="statHealth" class="text-4xl font-black text-slate-900 leading-none">--%</h3>
                     </div>
                 </div>
 
                 <!-- الرسوم البيانية -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div class="lg:col-span-2 glass-card p-8">
-                        <h4 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#0b2447]">📈 مستوى النشاط</h4>
+                    <div class="lg:col-span-2 glass-card p-8 text-right">
+                        <h4 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#0b2447]">📈 مستوى النشاط اليومي</h4>
                         <div id="lineChart" class="min-h-[300px]"></div>
                     </div>
                     <div class="glass-card p-8 text-center">
-                        <h4 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#0b2447]">🏥 مؤشر الصحة</h4>
+                        <h4 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#0b2447] justify-center text-right">🏥 مؤشر الصحة</h4>
                         <div id="healthGauge" class="min-h-[300px]"></div>
                     </div>
                 </div>
 
-                <!-- التوزيع والتقويم -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div class="glass-card p-8">
-                        <h4 class="text-lg font-bold mb-6 text-[#0b2447]">🎯 أنواع التدريب</h4>
+                    <div class="glass-card p-8 text-right">
+                        <h4 class="text-lg font-bold mb-6 text-[#0b2447]">🎯 توزيع البرامج</h4>
                         <div id="trainingPie" class="min-h-[300px]"></div>
                     </div>
-                    <div class="lg:col-span-2 glass-card p-8">
+                    <div class="lg:col-span-2 glass-card p-8 text-right">
                         <h4 class="text-lg font-bold mb-6 text-[#0b2447]">📅 تقويم التدريب (بداية السبت)</h4>
                         <div id="calendarGrid" class="grid grid-cols-7 gap-2"></div>
                     </div>
                 </div>
 
-                <!-- جدول التفاصيل -->
-                <div class="glass-card overflow-hidden">
+                <!-- الجدول التفصيلي -->
+                <div class="glass-card overflow-hidden text-right">
                     <div class="p-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center no-print">
-                        <h4 class="font-bold text-lg text-[#0b2447]">سجل التدريب اليومي</h4>
-                        <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="بحث في السجل..." class="px-4 py-2 border rounded-xl text-sm outline-none w-48 focus:ring-2 focus:ring-cyan-500">
+                        <h4 class="font-bold text-lg text-[#0b2447]">السجل التفصيلي</h4>
+                        <div class="relative">
+                             <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-slate-400"></i>
+                             <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="بحث سريع..." class="pl-10 pr-4 py-2 border rounded-xl text-sm outline-none w-48 focus:ring-2 focus:ring-cyan-500">
+                        </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-right" id="mainTable">
                             <thead class="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase">
                                 <tr>
                                     <th class="px-6 py-4">التاريخ</th>
-                                    <th class="px-6 py-4">اسم الخيل</th>
-                                    <th class="px-6 py-4">البرنامج</th>
-                                    <th class="px-6 py-4">المدة</th>
-                                    <th class="px-6 py-4">الحالة الصحية</th>
+                                    <th class="px-6 py-4 text-right">اسم الخيل</th>
+                                    <th class="px-6 py-4 text-right">البرنامج</th>
+                                    <th class="px-6 py-4 text-right">المدة</th>
+                                    <th class="px-6 py-4 text-right">الحالة الصحية</th>
                                     <th class="px-6 py-4 text-center no-print">المرفق</th>
                                 </tr>
                             </thead>
-                            <tbody id="tableBody" class="divide-y divide-slate-100 text-sm"></tbody>
+                            <tbody id="tableBody" class="divide-y divide-slate-100 text-sm font-medium"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- تبويب سجلات بيانات الخيل -->
-            <div id="content-records" class="tab-content hidden space-y-8">
+            <!-- تبويب سجل بيانات الخيل -->
+            <div id="content-records" class="tab-content hidden space-y-8 text-right">
                 <div class="glass-card p-8">
-                    <h2 class="text-2xl font-bold mb-2 text-[#0b2447]">محرك البحث في سجلات الخيل</h2>
-                    <p class="text-slate-500 mb-6 text-sm">البحث في الهوية والشهادات والبيانات العامة</p>
+                    <h2 class="text-2xl font-bold mb-2 text-[#0b2447]">سجل بيانات الخيل والشهادات</h2>
+                    <p class="text-slate-500 mb-6 text-sm font-semibold">استعلام عن بيانات الهوية والوثائق الرسمية</p>
                     <div class="relative max-w-3xl">
-                        <i data-lucide="search" class="absolute right-4 top-4 text-slate-400"></i>
-                        <input type="text" id="horseSearchInput" onkeyup="searchHorseRecords()" placeholder="ابحث باسم الخيل..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 pr-12 outline-none focus:ring-2 focus:ring-cyan-500 shadow-sm text-lg">
+                        <i data-lucide="search" class="absolute right-4 top-5 text-slate-400"></i>
+                        <input type="text" id="horseSearchInput" onkeyup="searchHorseRecords()" placeholder="ابحث باسم الخيل..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 pr-12 outline-none focus:ring-2 focus:ring-cyan-500 shadow-sm text-lg font-bold">
                     </div>
                 </div>
 
-                <!-- منطقة نتائج البحث (كروت) -->
+                <!-- نتائج البحث -->
                 <div id="recordsResultContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
-                <!-- القائمة الكاملة -->
+                <!-- الجدول الشامل -->
                 <div class="glass-card overflow-hidden">
                     <div class="p-6 bg-[#0b2447] text-white flex justify-between items-center">
-                        <h4 class="font-bold">قائمة البيانات الشاملة (الشيت الثاني)</h4>
-                        <button onclick="toggleRecordsTable()" class="text-xs bg-white/10 px-3 py-1 rounded-lg">إظهار/إخفاء</button>
+                        <h4 class="font-bold">قائمة البيانات الشاملة</h4>
+                        <button onclick="toggleRecordsTable()" class="text-xs bg-white/10 px-3 py-1 rounded-lg border border-white/20">إظهار/إخفاء الجدول</button>
                     </div>
                     <div id="recordsTableWrapper" class="overflow-x-auto hidden">
-                        <table class="w-full text-right text-[10px]">
-                            <thead class="bg-slate-50 text-slate-500 font-bold uppercase">
+                        <table class="w-full text-right text-[10px] font-bold">
+                            <thead class="bg-slate-50 text-slate-500 uppercase border-b">
                                 <tr id="recordsHeader"></tr>
                             </thead>
                             <tbody id="recordsTableBody" class="divide-y divide-slate-100"></tbody>
@@ -174,14 +181,14 @@
                 </div>
             </div>
 
-            <!-- تذييل للتقرير PDF -->
+            <!-- فوتر الـ PDF -->
             <div id="pdf-footer" class="hidden text-center text-[10px] text-slate-400 mt-10 pt-5 border-t">
                 جميع الحقوق محفوظة - مربط جادا للأصالة © 2026 | نظام الإدارة الموحد
             </div>
         </main>
     </div>
 
-    <!-- ربط ملف البرمجة والبيانات -->
-    <script src="main.js"></script>
+    <!-- ربط ملف البرمجة -->
+    <script src="script.js"></script>
 </body>
 </html>
