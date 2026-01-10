@@ -4,11 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام إدارة مربط جادا الموحد</title>
-    <!-- المكتبات الخارجية -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- ApexCharts -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <!-- html2pdf -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <!-- ربط ملف التنسيق -->
     <link rel="stylesheet" href="style.css">
@@ -25,12 +29,12 @@
                     </div>
                     <div>
                         <h1 class="text-xl font-bold">نظام مربط جادا الموحد</h1>
-                        <p class="text-[9px] text-cyan-300 opacity-80 uppercase tracking-widest">Integrated Management System</p>
+                        <p class="text-[9px] text-cyan-300 opacity-80 uppercase tracking-widest">Management & Analysis System</p>
                     </div>
                 </div>
                 <div class="flex gap-3">
                     <button onclick="exportPDF()" class="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 border border-white/20">
-                        <i data-lucide="file-down" class="w-4 h-4"></i> تصدير تقرير PDF
+                        <i data-lucide="printer" class="w-4 h-4"></i> تصدير PDF
                     </button>
                     <div id="loader" class="hidden py-2"><div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div></div>
                 </div>
@@ -65,9 +69,9 @@
                     <button onclick="applyFilters()" class="bg-slate-800 text-white px-8 py-3.5 rounded-xl font-bold transition-all hover:bg-black">تحديث البيانات</button>
                 </div>
 
-                <!-- ترويسة التقرير للـ PDF -->
+                <!-- ترويسة التقرير (تظهر في الـ PDF فقط) -->
                 <div id="report-header" class="hidden border-b-4 border-[#0b2447] pb-6 mb-8">
-                    <h1 class="text-3xl font-black text-[#0b2447] mb-2">تقرير الأداء والتدريب اليومي</h1>
+                    <h1 class="text-3xl font-black text-[#0b2447] mb-2">تقرير الأداء والتدريب الموحد</h1>
                     <p class="text-slate-600 font-bold">تاريخ التقرير: <span id="reportDateText"></span></p>
                 </div>
 
@@ -94,18 +98,19 @@
                 <!-- الرسوم البيانية -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="lg:col-span-2 glass-card p-8">
-                        <h4 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#0b2447]">📈 تتبع مستوى النشاط</h4>
+                        <h4 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#0b2447]">📈 مستوى النشاط</h4>
                         <div id="lineChart" class="min-h-[300px]"></div>
                     </div>
-                    <div class="glass-card p-8">
-                        <h4 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#0b2447]">🏥 سلامة الخيل</h4>
+                    <div class="glass-card p-8 text-center">
+                        <h4 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#0b2447]">🏥 مؤشر الصحة</h4>
                         <div id="healthGauge" class="min-h-[300px]"></div>
                     </div>
                 </div>
 
+                <!-- التوزيع والتقويم -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="glass-card p-8">
-                        <h4 class="text-lg font-bold mb-6 text-[#0b2447]">🎯 أنواع البرامج</h4>
+                        <h4 class="text-lg font-bold mb-6 text-[#0b2447]">🎯 أنواع التدريب</h4>
                         <div id="trainingPie" class="min-h-[300px]"></div>
                     </div>
                     <div class="lg:col-span-2 glass-card p-8">
@@ -114,18 +119,18 @@
                     </div>
                 </div>
 
-                <!-- جدول التدريب -->
+                <!-- جدول التفاصيل -->
                 <div class="glass-card overflow-hidden">
                     <div class="p-6 bg-slate-50 border-b border-slate-100 flex justify-between items-center no-print">
-                        <h4 class="font-bold text-lg text-[#0b2447]">السجل التفصيلي</h4>
-                        <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="بحث سريع..." class="px-4 py-2 border rounded-xl text-sm outline-none w-48 focus:ring-2 focus:ring-cyan-500">
+                        <h4 class="font-bold text-lg text-[#0b2447]">سجل التدريب اليومي</h4>
+                        <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="بحث في السجل..." class="px-4 py-2 border rounded-xl text-sm outline-none w-48 focus:ring-2 focus:ring-cyan-500">
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-right" id="mainTable">
                             <thead class="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase">
                                 <tr>
                                     <th class="px-6 py-4">التاريخ</th>
-                                    <th class="px-6 py-4">الخيل</th>
+                                    <th class="px-6 py-4">اسم الخيل</th>
                                     <th class="px-6 py-4">البرنامج</th>
                                     <th class="px-6 py-4">المدة</th>
                                     <th class="px-6 py-4">الحالة الصحية</th>
@@ -138,28 +143,28 @@
                 </div>
             </div>
 
-            <!-- تبويب سجل بيانات الخيل -->
+            <!-- تبويب سجلات بيانات الخيل -->
             <div id="content-records" class="tab-content hidden space-y-8">
                 <div class="glass-card p-8">
-                    <h2 class="text-2xl font-bold mb-2 text-[#0b2447]">سجل بيانات الخيل والشهادات</h2>
-                    <p class="text-slate-500 mb-6 text-sm">ابحث في قاعدة البيانات العامة، جوازات السفر، والوثائق الرسمية</p>
+                    <h2 class="text-2xl font-bold mb-2 text-[#0b2447]">محرك البحث في سجلات الخيل</h2>
+                    <p class="text-slate-500 mb-6 text-sm">البحث في الهوية والشهادات والبيانات العامة</p>
                     <div class="relative max-w-3xl">
                         <i data-lucide="search" class="absolute right-4 top-4 text-slate-400"></i>
-                        <input type="text" id="horseSearchInput" onkeyup="searchHorseRecords()" placeholder="ابحث باسم الخيل أو رقم الشهادة..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 pr-12 outline-none focus:ring-2 focus:ring-cyan-500 shadow-sm text-lg">
+                        <input type="text" id="horseSearchInput" onkeyup="searchHorseRecords()" placeholder="ابحث باسم الخيل..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 pr-12 outline-none focus:ring-2 focus:ring-cyan-500 shadow-sm text-lg">
                     </div>
                 </div>
 
-                <!-- نتائج البحث (كروت) -->
+                <!-- منطقة نتائج البحث (كروت) -->
                 <div id="recordsResultContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
                 <!-- القائمة الكاملة -->
                 <div class="glass-card overflow-hidden">
                     <div class="p-6 bg-[#0b2447] text-white flex justify-between items-center">
-                        <h4 class="font-bold">قائمة البيانات الشاملة</h4>
-                        <button onclick="toggleRecordsTable()" class="text-xs bg-white/10 px-3 py-1 rounded-lg">إظهار/إخفاء الجدول</button>
+                        <h4 class="font-bold">قائمة البيانات الشاملة (الشيت الثاني)</h4>
+                        <button onclick="toggleRecordsTable()" class="text-xs bg-white/10 px-3 py-1 rounded-lg">إظهار/إخفاء</button>
                     </div>
                     <div id="recordsTableWrapper" class="overflow-x-auto hidden">
-                        <table class="w-full text-right text-xs">
+                        <table class="w-full text-right text-[10px]">
                             <thead class="bg-slate-50 text-slate-500 font-bold uppercase">
                                 <tr id="recordsHeader"></tr>
                             </thead>
@@ -169,14 +174,14 @@
                 </div>
             </div>
 
-            <!-- تذييل التقرير -->
+            <!-- تذييل للتقرير PDF -->
             <div id="pdf-footer" class="hidden text-center text-[10px] text-slate-400 mt-10 pt-5 border-t">
                 جميع الحقوق محفوظة - مربط جادا للأصالة © 2026 | نظام الإدارة الموحد
             </div>
         </main>
     </div>
 
-    <!-- ربط ملف البرمجة -->
-    <script src="script.js"></script>
+    <!-- ربط ملف البرمجة والبيانات -->
+    <script src="main.js"></script>
 </body>
 </html>
