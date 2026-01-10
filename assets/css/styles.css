@@ -1,10 +1,9 @@
+/* تعريف الخطوط والألوان */
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;600;700&display=swap');
 
 :root {
     --navy: #0b2447;
     --turquoise: #00a8cc;
-    --emerald: #10b981;
-    --rose: #f43f5e;
     --bg-slate: #f1f5f9;
 }
 
@@ -15,12 +14,12 @@ body {
     margin: 0;
 }
 
-/* تدرج الألوان الرسمي */
+/* تدرج الألوان الرئيسي */
 .navy-gradient { 
     background: linear-gradient(135deg, var(--navy) 0%, #19376d 100%); 
 }
 
-/* تصميم الكروت الزجاجي */
+/* تصميم الكروت */
 .glass-card { 
     background: white; 
     border-radius: 1.5rem; 
@@ -46,12 +45,13 @@ body {
     border-bottom: 3px solid var(--turquoise);
 }
 
-/* شبكة التقويم */
+/* تنسيقات التقويم (بداية السبت) */
 .calendar-header { 
     font-size: 11px; 
     font-weight: 700; 
     color: #64748b; 
     text-align: center; 
+    padding-bottom: 8px;
 }
 
 .calendar-day { 
@@ -76,7 +76,7 @@ body {
     border: 1px dashed #cbd5e1; 
 }
 
-/* إعدادات التقرير PDF */
+/* وضع تصدير PDF */
 .pdf-mode { 
     background: white !important; 
 }
@@ -88,9 +88,10 @@ body {
 .pdf-mode .glass-card { 
     border: 1px solid #ddd !important; 
     box-shadow: none !important; 
+    border-radius: 8px;
 }
 
-/* تحسين السكرول */
+/* تحسين شريط التمرير */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
