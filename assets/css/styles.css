@@ -1,101 +1,233 @@
-/* تعريف الخطوط والألوان */
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;600;700&display=swap');
 
 :root {
-    --navy: #0b2447;
-    --turquoise: #00a8cc;
-    --bg-slate: #f1f5f9;
+  --navy: #0b2447;
+  --turquoise: #00a8cc;
 }
 
-body { 
-    font-family: 'IBM Plex Sans Arabic', sans-serif; 
-    background-color: var(--bg-slate); 
-    color: #1e293b;
-    margin: 0;
+body {
+  font-family: 'IBM Plex Sans Arabic', sans-serif;
+  background-color: #f1f5f9;
 }
 
-/* تدرج الألوان الرئيسي */
-.navy-gradient { 
-    background: linear-gradient(135deg, var(--navy) 0%, #19376d 100%); 
+.site-nav {
+  backdrop-filter: blur(10px);
 }
 
-/* تصميم الكروت */
-.glass-card { 
-    background: white; 
-    border-radius: 1.5rem; 
-    border: 1px solid #e2e8f0; 
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.04); 
-    page-break-inside: avoid;
+.nav-inner {
+  gap: 24px;
 }
 
-/* أزرار التبويبات */
-.tab-btn { 
-    padding: 12px 24px; 
-    font-weight: 700; 
-    border-radius: 0.75rem; 
-    cursor: pointer; 
-    transition: all 0.3s ease;
-    color: #64748b;
+.chart-area {
+  width: 100%;
 }
 
-.tab-btn.active { 
-    background: white; 
-    color: var(--navy); 
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-    border-bottom: 3px solid var(--turquoise);
+.kpi-card h3 {
+  letter-spacing: -0.02em;
 }
 
-/* تنسيقات التقويم (بداية السبت) */
-.calendar-header { 
-    font-size: 11px; 
-    font-weight: 700; 
-    color: #64748b; 
-    text-align: center; 
-    padding-bottom: 8px;
+.glass-card {
+  background: white;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
 
-.calendar-day { 
-    height: 42px; 
-    border-radius: 8px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    font-size: 12px; 
-    font-weight: 700; 
+.navy-gradient {
+  background: linear-gradient(135deg, var(--navy) 0%, #19376d 100%);
 }
 
-.day-training { 
-    background-color: var(--turquoise); 
-    color: white; 
-    box-shadow: 0 4px 10px rgba(0, 168, 204, 0.2); 
+/* Calendar */
+.calendar-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-align: center;
+  padding-bottom: 8px;
 }
 
-.day-rest { 
-    background-color: #f8fafc; 
-    color: #94a3b8; 
-    border: 1px dashed #cbd5e1; 
+.calendar-day {
+  height: 42px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.2s;
+  user-select: none;
 }
 
-/* وضع تصدير PDF */
-.pdf-mode { 
-    background: white !important; 
+.day-training {
+  background-color: var(--turquoise);
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 168, 204, 0.3);
 }
 
-.pdf-mode .no-print, .pdf-mode nav { 
-    display: none !important; 
+.day-rest {
+  background-color: #f1f5f9;
+  color: #94a3b8;
+  border: 1px dashed #cbd5e1;
 }
 
-.pdf-mode .glass-card { 
-    border: 1px solid #ddd !important; 
-    box-shadow: none !important; 
-    border-radius: 8px;
+/* Force date inputs to display as DD/MM/YYYY using a wrapper view (since native date inputs vary by device) */
+.date-hint {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 6px;
+  font-weight: 700;
 }
 
-/* تحسين شريط التمرير */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+@media (max-width: 1024px) {
+  .nav-inner {
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .nav-inner > div:last-child {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    background-color: #eef2f7;
+  }
+
+  main.container {
+    padding: 16px !important;
+  }
+
+  .site-nav {
+    padding: 16px 12px;
+  }
+
+  .nav-inner {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .nav-inner h1 {
+    font-size: 18px;
+  }
+
+  .nav-inner p {
+    font-size: 9px;
+  }
+
+  .site-nav button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .filter-card {
+    padding: 12px;
+    gap: 10px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  }
+
+  .filter-card .flex-1 {
+    min-width: 100%;
+  }
+
+  .filter-card label {
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+
+  .filter-card input,
+  .filter-card select {
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 12px;
+  }
+
+  .filter-card .date-hint {
+    margin-top: 4px;
+    font-size: 10px;
+  }
+
+  .kpi-grid {
+    gap: 12px;
+  }
+
+  .kpi-card {
+    padding: 14px 12px;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+    text-align: center;
+  }
+
+  .kpi-card h3 {
+    font-size: 24px;
+  }
+
+  .chart-card,
+  .calendar-card {
+    padding: 16px;
+  }
+
+  .chart-card h4,
+  .calendar-card h4 {
+    font-size: 16px;
+  }
+
+  .chart-area {
+    min-height: 220px !important;
+    touch-action: pan-y;
+  }
+
+  #calendarGrid {
+    gap: 6px !important;
+  }
+
+  .calendar-day {
+    height: 36px;
+    font-size: 11px;
+  }
+
+  .table-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .table-search {
+    width: 100%;
+  }
+
+  table th,
+  table td {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .kpi-grid {
+    gap: 10px;
+  }
+
+  .kpi-card {
+    padding: 12px 10px;
+  }
+
+  .kpi-card p {
+    font-size: 10px;
+  }
+
+  .kpi-card h3 {
+    font-size: 22px;
+  }
+}
 
 @media print {
-    .no-print { display: none !important; }
+  .no-print {
+    display: none !important;
+  }
 }
