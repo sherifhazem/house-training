@@ -1,314 +1,270 @@
 /**
- * نظام إدارة وتحليل بيانات مربط جادا
- * مبرمج للربط المباشر مع Google Sheets
+ * نظام إدارة مربط جادا - الإصدار المتوافق مع الجوال
  */
 
-// روابط ملفات البيانات بصيغة CSV
 const TRAINING_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSA8oCh4yfOK5khe_kd0O7gylN9RDKxtnJ7yxouZd7YobQwNisyy5X91oZvXpOnMrFde7Wss0Y4pDhk/pub?output=csv";
 const RECORDS_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSAeCLUYDXemRYF147vmNYIen6pUOfaP2NvfD7wQ1GwCDsi6mHr8MQeuODo3W3DB5jnEF6qUS15fwbD/pub?output=csv";
 
-let trainingData = [];
-let horseRecordsData = [];
+let masterTrainingData = [];
+let horseGeneralRecords = [];
 let activeCharts = {};
 
-// دالة لتنسيق التاريخ ليظهر يوم/شهر/سنة
-function formatDateDMY(date) {
-    if (!date) return "--";
+// دالة تنسيق التاريخ: يوم/شهر/سنة
+function formatDateAR(date) {
+    if(!date) return "--";
     const d = String(date.getDate()).padStart(2, '0');
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const y = date.getFullYear();
     return `${d}/${m}/${y}`;
 }
 
-// جلب ومعالجة البيانات من المصادر
-async function fetchData() {
+// جلب البيانات
+async function loadAllData() {
     document.getElementById('loader').classList.remove('hidden');
     
-    // جلب ملف التدريب الأول
+    // سحب بيانات التدريب
     Papa.parse(TRAINING_CSV, {
         download: true,
         header: true,
-        complete: (res) => {
-            trainingData = res.data.map(d => {
-                let obj = {};
-                for (let key in d) obj[key.trim()] = d[key].trim();
-                const dt = new Date(obj["Timestamp"]);
-                if (!isNaN(dt)) {
-                    obj.dateObj = dt;
-                    obj.isoDate = dt.toISOString().split('T')[0];
-                }
-                return obj;
-            }).filter(d => d.isoDate);
-            
-            // جلب ملف السجلات الثاني
+        complete: (results) => {
+            masterTrainingData = results.data.map(row => {
+                let clean = {};
+                for(let k in row) clean[k.trim()] = row[k].trim();
+                const d = new Date(clean["Timestamp"]);
+                if(!isNaN(d)) { clean.dateObj = d; clean.isoDate = d.toISOString().split('T')[0]; }
+                return clean;
+            }).filter(r => r.isoDate);
+
+            // سحب سجلات الخيل العامة
             Papa.parse(RECORDS_CSV, {
                 download: true,
                 header: true,
                 complete: (res2) => {
-                    horseRecordsData = res2.data.map(d => {
-                        let obj = {};
-                        for (let key in d) obj[key.trim()] = d[key].trim();
-                        return obj;
-                    }).filter(d => Object.values(d).some(v => v !== ""));
+                    horseGeneralRecords = res2.data.map(row => {
+                        let clean = {};
+                        for(let k in row) clean[k.trim()] = row[k].trim();
+                        return clean;
+                    }).filter(r => Object.values(r).some(v => v !== ""));
                     
                     document.getElementById('loader').classList.add('hidden');
-                    initDashboard();
+                    initializeUI();
                 }
             });
         }
     });
 }
 
-// تهيئة النظام وعرض البيانات
-function initDashboard() {
+function initializeUI() {
     lucide.createIcons();
     
-    // تعبئة قائمة اختيار الخيول في الفلاتر
-    const horses = [...new Set(trainingData.map(d => d["اسم الخيل"]))].filter(h => h);
-    const select = document.getElementById('horseFilter');
-    if(select) {
-        select.innerHTML = '<option value="all">كل الخيول</option>';
-        horses.sort().forEach(h => {
-            const opt = document.createElement('option');
-            opt.value = h; opt.innerText = h;
-            select.appendChild(opt);
-        });
-    }
-    
-    renderRecordsTable();
+    // ملء الفلاتر
+    const horses = [...new Set(masterTrainingData.map(r => r["اسم الخيل"]))].filter(h => h).sort();
+    const filter = document.getElementById('horseFilter');
+    horses.forEach(h => {
+        const opt = document.createElement('option');
+        opt.value = h; opt.innerText = h; filter.appendChild(opt);
+    });
+
     applyFilters();
 }
 
-// تبديل التبويبات (Tabs)
-function switchTab(tab) {
+function switchTab(tabId) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-    document.getElementById(`tab-${tab}`).classList.add('active');
-    document.getElementById(`content-${tab}`).classList.remove('hidden');
+    document.getElementById(`tab-${tabId}`).classList.add('active');
+    document.getElementById(`content-${tabId}`).classList.remove('hidden');
     lucide.createIcons();
-    // إعادة ضبط الرسوم البيانية لتناسب العرض الجديد
     window.dispatchEvent(new Event('resize'));
 }
 
-// تطبيق فلاتر البحث التاريخي
 function applyFilters() {
     const horse = document.getElementById('horseFilter').value;
     const start = document.getElementById('startDate').value;
     const end = document.getElementById('endDate').value;
 
-    let filtered = trainingData.filter(d => {
+    let filtered = masterTrainingData.filter(d => {
         const mH = horse === 'all' || d["اسم الخيل"] === horse;
         const mS = !start || d.isoDate >= start;
         const mE = !end || d.isoDate <= end;
         return mH && mS && mE;
     });
 
-    // ترتيب من الأحدث للأقدم
-    filtered.sort((a, b) => b.dateObj - a.dateObj);
-    renderAnalysisContent(filtered);
+    filtered.sort((a,b) => b.dateObj - a.dateObj);
+    refreshDashboard(filtered);
 }
 
-// معالجة عرض تبويب التحليل
-function renderAnalysisContent(data) {
+function refreshDashboard(data) {
+    // تحديث الأرقام
     const total = data.length;
     const avg = (data.reduce((s, d) => s + parseFloat(d["تقييم نشاط واستجابة الخيل"] || 0), 0) / total || 0).toFixed(1);
     const time = data.reduce((s, d) => s + parseInt(d["مدة الحصة التدريبية بالدقيقة"] || 0), 0);
     const healthy = data.filter(d => d["ملاحظات صحية"] === "الخيل سليم تماماً").length;
     const healthP = ((healthy / total) * 100 || 0).toFixed(0);
 
-    const stats = {
-        'statTotal': total,
-        'statAvg': avg,
-        'statTime': time + " د",
-        'statHealth': healthP
-    };
-
-    for(let id in stats) {
-        const el = document.getElementById(id);
-        if(el) el.innerText = stats[id];
-    }
+    document.getElementById('statTotal').innerText = total;
+    document.getElementById('statAvg').innerText = avg;
+    document.getElementById('statTime').innerText = time;
+    document.getElementById('statHealth').innerText = healthP;
 
     renderCharts(data);
-    renderCalendarGrid(data);
-    renderDetailedTable(data);
+    renderCalendar(data);
+    renderTable(data);
 }
 
-// رسم المخططات البيانية التفاعلية
 function renderCharts(data) {
     const font = 'IBM Plex Sans Arabic';
-    const series = data.slice().reverse().map(d => ({ x: d.isoDate, y: parseFloat(d["تقييم نشاط واستجابة الخيل"] || 0) }));
-    
-    // 1. منحنى النشاط
+    const chartSeries = data.slice().reverse().map(d => ({ x: d.isoDate, y: parseFloat(d["تقييم نشاط واستجابة الخيل"] || 0) }));
+
+    // 1. الخط الزمني (الأداء)
     if(activeCharts.line) activeCharts.line.destroy();
-    activeCharts.line = new ApexCharts(document.querySelector("#lineChart"), {
+    activeCharts.line = new ApexCharts(document.querySelector("#performanceLineChart"), {
         chart: { type: 'area', height: 300, toolbar: {show:false}, fontFamily: font },
-        series: [{ name: 'النشاط', data: series }],
-        colors: ['#00a8cc'], stroke: {curve:'smooth', width:3},
-        xaxis: {type:'datetime'}
+        series: [{ name: 'مستوى النشاط', data: chartSeries }],
+        colors: ['#00a8cc'],
+        stroke: { curve: 'smooth', width: 3 },
+        xaxis: { type: 'datetime', labels: {style:{fontSize:'10px'}} }
     });
     activeCharts.line.render();
 
-    // 2. مؤشر السلامة (Gauge)
+    // 2. مؤشر الصحة (العداد)
     const hVal = parseInt(document.getElementById('statHealth').innerText);
     if(activeCharts.gauge) activeCharts.gauge.destroy();
     activeCharts.gauge = new ApexCharts(document.querySelector("#healthGauge"), {
         chart: { type: 'radialBar', height: 320, fontFamily: font },
         series: [hVal],
-        plotOptions: { 
-            radialBar: { hollow:{size:'65%'}, dataLabels:{ value:{fontSize:'30px', fontWeight:'700', color: '#0b2447', formatter: v=>v+"%"} } } 
+        plotOptions: {
+            radialBar: { hollow:{size:'65%'}, dataLabels:{ value:{fontSize:'28px', fontWeight:'700', color: '#0b2447', formatter: v=>v+"%"} } }
         },
-        fill: { colors:[hVal > 80 ? '#10b981' : hVal > 50 ? '#f59e0b' : '#ef4444'] }
+        fill: { colors: [hVal > 80 ? '#10b981' : hVal > 50 ? '#f59e0b' : '#ef4444'] }
     });
-    activeCharts.gauge.render();
+    // ملاحظة: تم تعديل المسمى ليتوافق مع HTML
+    const gaugeContainer = document.querySelector("#healthIndicatorChart");
+    if(gaugeContainer) {
+        if(activeCharts.gauge) activeCharts.gauge.destroy();
+        activeCharts.gauge = new ApexCharts(gaugeContainer, {
+            chart: { type: 'radialBar', height: 320, fontFamily: font },
+            series: [hVal],
+            plotOptions: { radialBar: { hollow:{size:'60%'}, dataLabels:{ value:{fontSize:'24px', offsetY:-10, formatter: v=>v+"%"} } } },
+            fill: { colors:[hVal > 85 ? '#10b981' : '#f59e0b'] }
+        });
+        activeCharts.gauge.render();
+    }
 
-    // 3. توزيع أنواع التدريب (Pie)
+    // 3. أنواع التدريب (دائري)
     const types = {};
     data.forEach(d => types[d["نوع التدريب اليومي"]] = (types[d["نوع التدريب اليومي"]] || 0) + 1);
     if(activeCharts.pie) activeCharts.pie.destroy();
-    activeCharts.pie = new ApexCharts(document.querySelector("#trainingPie"), {
+    activeCharts.pie = new ApexCharts(document.querySelector("#trainingTypeChart"), {
         chart: { type: 'donut', height: 300, fontFamily: font },
-        series: Object.values(types), labels: Object.keys(types),
+        series: Object.values(types),
+        labels: Object.keys(types),
         colors: ['#0b2447', '#00a8cc', '#10b981', '#f59e0b'],
-        legend: {position:'bottom'}
+        legend: { position: 'bottom', fontSize: '10px' }
     });
     activeCharts.pie.render();
 }
 
-// بناء التقويم (بداية الأسبوع السبت)
-function renderCalendarGrid(data) {
-    const grid = document.getElementById('calendarGrid');
-    if(!grid) return;
+function renderCalendar(data) {
+    const grid = document.getElementById('trainingCalendar');
     grid.innerHTML = '';
-    if (!data.length) return;
+    if(!data.length) return;
 
-    const tDays = new Set(data.map(d => d.isoDate));
+    const trainedDates = new Set(data.map(d => d.isoDate));
     const latest = new Date(data[0].dateObj);
-    const year = latest.getFullYear(), month = latest.getMonth();
-    const first = new Date(year, month, 1), last = new Date(year, month + 1, 0);
+    const y = latest.getFullYear(), m = latest.getMonth();
+    const firstDay = new Date(y, m, 1), lastDay = new Date(y, m + 1, 0);
 
-    const getSatIdx = d => (d + 1) % 7;
-    const offset = getSatIdx(first.getDay());
+    // السبت = 0 في منطقنا
+    const startOffset = (firstDay.getDay() + 1) % 7;
 
-    ['سبت','أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة'].forEach(d => grid.innerHTML += `<div class="calendar-header">${d}</div>`);
-    for (let i = 0; i < offset; i++) grid.innerHTML += `<div></div>`;
+    ['س', 'ح', 'ن', 'ث', 'ر', 'خ', 'ج'].forEach(d => {
+        grid.innerHTML += `<div class="cal-header">${d}</div>`;
+    });
 
-    for (let d = 1; d <= last.getDate(); d++) {
-        const cur = new Date(year, month, d);
+    for(let i=0; i<startOffset; i++) grid.innerHTML += `<div></div>`;
+
+    for(let d=1; d<=lastDay.getDate(); d++) {
+        const cur = new Date(y, m, d);
         const iso = cur.toISOString().split('T')[0];
-        const isT = tDays.has(iso);
-        grid.innerHTML += `<div class="calendar-day ${isT ? 'day-training' : 'day-rest'}" title="${isT?'تدريب':'راحة'}">${d}</div>`;
+        const isT = trainedDates.has(iso);
+        grid.innerHTML += `<div class="cal-day ${isT ? 'day-active' : 'day-idle'}">${d}</div>`;
     }
 }
 
-// عرض الجدول التفصيلي للتدريب
-function renderDetailedTable(data) {
-    const body = document.getElementById('tableBody'); 
-    if(!body) return;
-    body.innerHTML = '';
+function renderTable(data) {
+    const body = document.getElementById('tableBody'); body.innerHTML = '';
     data.forEach(d => {
-        const isH = d["ملاحظات صحية"] === "الخيل سليم تماماً";
         body.innerHTML += `
-            <tr class="hover:bg-slate-50 transition border-b">
-                <td class="px-6 py-4 font-bold text-slate-700 text-right">
-                    ${formatDateDMY(d.dateObj)} 
-                    <span class="text-[9px] text-slate-400 block">${d.dateObj.getHours()}:${String(d.dateObj.getMinutes()).padStart(2,'0')}</span>
+            <tr class="hover:bg-slate-50 transition">
+                <td class="p-4 font-bold text-slate-700">${formatDateAR(d.dateObj)}</td>
+                <td class="p-4 font-bold text-[#0b2447]">${d["اسم الخيل"]}</td>
+                <td class="p-4 text-slate-500 font-bold text-[10px]">${d["نوع التدريب اليومي"]}</td>
+                <td class="p-4 font-black text-cyan-600">${d["مدة الحصة التدريبية بالدقيقة"]} د</td>
+                <td class="p-4 text-center no-print">
+                    <a href="${d["يمكنك رفع صور او فيدو للتوثيق"]}" target="_blank" class="text-cyan-500 hover:scale-110 transition inline-block"><i data-lucide="external-link" class="w-4 h-4"></i></a>
                 </td>
-                <td class="px-6 py-4 font-bold text-[#0b2447] text-right">${d["اسم الخيل"]}</td>
-                <td class="px-6 py-4 text-[10px] font-bold text-slate-600 text-right">${d["نوع التدريب اليومي"]}</td>
-                <td class="px-6 py-4 font-bold text-cyan-600 text-right">${d["مدة الحصة التدريبية بالدقيقة"]} د</td>
-                <td class="px-6 py-4 text-right"><span class="px-3 py-1 rounded-full text-[9px] font-bold ${isH ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}">${d["ملاحظات صحية"]}</span></td>
-                <td class="px-6 py-4 text-center no-print"><a href="${d["يمكنك رفع صور او فيدو للتوثيق"]}" target="_blank" class="text-cyan-500 hover:text-cyan-700 transition"><i data-lucide="external-link" class="w-5 h-5 mx-auto"></i></a></td>
             </tr>
         `;
     });
     lucide.createIcons();
 }
 
-// عرض جدول السجلات (الشيت الثاني)
-function renderRecordsTable() {
-    const head = document.getElementById('recordsHeader');
-    const body = document.getElementById('recordsTableBody');
-    if (!horseRecordsData.length || !head || !body) return;
-    const keys = Object.keys(horseRecordsData[0]);
-    head.innerHTML = keys.map(k => `<th class="px-6 py-4 text-right">${k}</th>`).join('');
-    body.innerHTML = horseRecordsData.map(row => {
-        return `<tr>${keys.map(k => {
-            const val = row[k];
-            if (val && (val.startsWith('http') || val.includes('drive.google'))) {
-                return `<td class="px-6 py-4 text-right"><a href="${val}" target="_blank" class="text-cyan-600 font-bold underline">فتح المرفق</a></td>`;
-            }
-            return `<td class="px-6 py-4 font-semibold text-slate-700 text-right">${val || '--'}</td>`;
-        }).join('')}</tr>`;
-    }).join('');
-}
+function searchHorseData() {
+    const q = document.getElementById('recordSearch').value.toLowerCase();
+    const cont = document.getElementById('recordsContainer');
+    cont.innerHTML = '';
+    if(!q) return;
 
-// محرك بحث سجلات الخيل
-function searchHorseRecords() {
-    const query = document.getElementById('horseSearchInput').value.toLowerCase();
-    const container = document.getElementById('recordsResultContainer');
-    if(!container) return;
-    container.innerHTML = '';
-    if (!query) return;
+    const res = horseGeneralRecords.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(q)));
 
-    const results = horseRecordsData.filter(d => Object.values(d).some(v => String(v).toLowerCase().includes(query)));
-
-    results.forEach(res => {
-        const card = document.createElement('div');
-        card.className = "glass-card p-6 border-t-4 border-[#0b2447] text-right";
-        let content = `<h3 class="text-xl font-bold mb-4 text-[#00a8cc]">${res["اسم الخيل"] || "بيانات خيل"}</h3><div class="space-y-3 text-sm">`;
-        for (let k in res) {
-            if (k === "اسم الخيل") continue;
-            const val = res[k];
-            if (val && (val.startsWith('http') || val.includes('drive.google'))) {
-                content += `<p class="flex justify-between items-center bg-slate-50 p-2 rounded-lg"><strong>${k}:</strong> <a href="${val}" target="_blank" class="text-blue-600 font-bold underline text-[10px]">عرض المرفق</a></p>`;
-            } else if (val) {
-                content += `<p class="flex justify-between border-b border-slate-50 pb-1"><strong>${k}:</strong> <span class="text-slate-600 font-semibold">${val}</span></p>`;
+    res.forEach(r => {
+        let card = `<div class="glass-card p-5 border-t-4 border-[#0b2447] text-right">
+            <h3 class="text-lg font-bold text-cyan-600 mb-3">${r["اسم الخيل"] || "بيانات خيل"}</h3>
+            <div class="space-y-2 text-xs">`;
+        for(let k in r) {
+            if(k === "اسم الخيل") continue;
+            const val = r[k];
+            if(val && val.startsWith('http')) {
+                card += `<p class="flex justify-between border-b pb-1"><strong>${k}:</strong> <a href="${val}" target="_blank" class="text-blue-500 underline font-bold">فتح الرابط</a></p>`;
+            } else if(val) {
+                card += `<p class="flex justify-between border-b pb-1"><strong>${k}:</strong> <span class="text-slate-600">${val}</span></p>`;
             }
         }
-        content += `</div>`;
-        card.innerHTML = content;
-        container.appendChild(card);
+        card += `</div></div>`;
+        cont.innerHTML += card;
     });
     lucide.createIcons();
 }
 
 function toggleRecordsTable() {
-    const el = document.getElementById('recordsTableWrapper');
-    if(el) el.classList.toggle('hidden');
+    document.getElementById('recordsTableWrapper').classList.toggle('hidden');
 }
 
 function searchTable() {
-    const val = document.getElementById("searchInput").value.toLowerCase();
-    document.querySelectorAll("#tableBody tr").forEach(r => r.style.display = r.innerText.toLowerCase().includes(val) ? "" : "none");
+    const v = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('#tableBody tr').forEach(r => r.style.display = r.innerText.toLowerCase().includes(v) ? '' : 'none');
 }
 
-// تصدير PDF احترافي (Report Mode)
-async function exportPDF() {
+async function exportToPDF() {
+    const el = document.getElementById('dashboard-container');
     document.body.classList.add('pdf-mode');
-    const header = document.getElementById('report-header');
-    const footer = document.getElementById('pdf-footer');
-    if(header) header.classList.remove('hidden');
-    if(footer) footer.classList.remove('hidden');
-    const dateText = document.getElementById('reportDateText');
-    if(dateText) dateText.innerText = formatDateDMY(new Date());
+    document.getElementById('pdf-report-header').classList.remove('hidden');
+    document.getElementById('pdf-footer').classList.remove('hidden');
+    document.getElementById('pdf-date').innerText = formatDateAR(new Date());
 
     const opt = {
-        margin: 10, 
-        filename: `تقرير_جادا_${formatDateDMY(new Date()).replace(/\//g, '-')}.pdf`,
+        margin: 10,
+        filename: `مربط_جادا_تقرير_${formatDateAR(new Date()).replace(/\//g,'-')}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    const container = document.getElementById('dashboard-container');
-    if(container) {
-        await html2pdf().set(opt).from(container).save();
-    }
+    await html2pdf().set(opt).from(el).save();
 
     document.body.classList.remove('pdf-mode');
-    if(header) header.classList.add('hidden');
-    if(footer) footer.classList.add('hidden');
+    document.getElementById('pdf-report-header').classList.add('hidden');
+    document.getElementById('pdf-footer').classList.add('hidden');
 }
 
-// بدء التشغيل فور تحميل الصفحة
-window.onload = fetchData;
+window.onload = loadAllData;
