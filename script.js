@@ -9,7 +9,38 @@ let masterTrainingData = [];
 let horseGeneralRecords = [];
 let activeCharts = {};
 
-// دالة للحصول على التاريخ بصيغة YYYY-MM-DD حسب التوقيت المحلي
+/**
+ * دالة مخصصة لتحليل التاريخ بصيغة يوم/شهر/سنة (DD/MM/YYYY)
+ * تمنع الخطأ الشائع في المتصفحات التي تقلب اليوم والشهر
+ */
+function parseDMY(dateStr) {
+    if (!dateStr) return null;
+    
+    // فصل التاريخ عن الوقت إذا وجد
+    const parts = dateStr.split(' ');
+    const dateParts = parts[0].split('/');
+    
+    if (dateParts.length !== 3) {
+        // محاولة بديلة إذا كان الفاصل "-"
+        const altParts = parts[0].split('-');
+        if (altParts.length === 3) {
+            // التحقق إذا كانت السنة هي الأولى (ISO Format)
+            if (altParts[0].length === 4) {
+                return new Date(altParts[0], altParts[1] - 1, altParts[2]);
+            }
+            return new Date(altParts[2], altParts[1] - 1, altParts[0]);
+        }
+        return new Date(dateStr);
+    }
+    
+    const day = parseInt(dateParts[0], 10);
+    const month = parseInt(dateParts[1], 10) - 1; // الشهور في JS تبدأ من 0
+    const year = parseInt(dateParts[2], 10);
+    
+    return new Date(year, month, day);
+}
+
+// دالة للحصول على التاريخ بصيغة YYYY-MM-DD حسب التوقيت المحلي للمطابقة
 function getLocalDateString(date) {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -17,7 +48,7 @@ function getLocalDateString(date) {
     return `${y}-${m}-${d}`;
 }
 
-// دالة تنسيق التاريخ للعرض: يوم/شهر/سنة
+// دالة تنسيق التاريخ للعرض النهائي: يوم/شهر/سنة (DD/MM/YYYY)
 function formatDateAR(date) {
     if (!date) return "--";
     const d = String(date.getDate()).padStart(2, '0');
@@ -39,10 +70,12 @@ async function loadAllData() {
             masterTrainingData = results.data.map(row => {
                 let clean = {};
                 for (let k in row) clean[k.trim()] = row[k].trim();
-                const d = new Date(clean["Timestamp"]);
-                if (!isNaN(d)) {
+                
+                // استخدام المحلل المخصص لضمان قراءة يوم/شهر/سنة بشكل صحيح
+                const d = parseDMY(clean["Timestamp"]);
+                
+                if (d && !isNaN(d.getTime())) {
                     clean.dateObj = d;
-                    // استخدام التاريخ المحلي للمطابقة الدقيقة مع التقويم
                     clean.isoDate = getLocalDateString(d);
                 }
                 return clean;
@@ -217,7 +250,7 @@ function renderCalendar(data) {
     // استخراج كافة تواريخ النشاط المفلترة
     const trainedDates = new Set(data.map(d => d.isoDate));
     
-    // تحديد الشهر والسنة بناءً على أحدث سجل
+    // تحديد الشهر والسنة بناءً على أحدث سجل (تم تصحيحه ليعتمد على parseDMY)
     const latestDate = data[0].dateObj;
     const y = latestDate.getFullYear();
     const m = latestDate.getMonth();
@@ -233,8 +266,6 @@ function renderCalendar(data) {
     const lastDay = new Date(y, m + 1, 0);
 
     // السبت = 0 في منطقنا لتناسب الثقافة العربية (السبت بداية الأسبوع)
-    // getDay: الأحد=0، الاثنين=1... السبت=6
-    // لجعل السبت=0: (getDay() + 1) % 7
     const startOffset = (firstDay.getDay() + 1) % 7;
 
     const headers = ['س', 'ح', 'ن', 'ث', 'ر', 'خ', 'ج'];
@@ -257,6 +288,10 @@ function renderCalendar(data) {
         const isTrained = trainedDates.has(iso);
         
         const dayDiv = document.createElement('div');
+        // تم تصغير ارتفاع الخلايا ليتناسب مع ارتفاع الرسوم البيانية الأخرى
+        dayDiv.style.height = '32px';
+        dayDiv.style.width = '32px';
+        dayDiv.style.margin = 'auto';
         dayDiv.className = `cal-day ${isTrained ? 'day-active' : 'day-idle'}`;
         dayDiv.innerText = d;
         grid.appendChild(dayDiv);
