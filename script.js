@@ -9,7 +9,15 @@ let masterTrainingData = [];
 let horseGeneralRecords = [];
 let activeCharts = {};
 
-// دالة تنسيق التاريخ: يوم/شهر/سنة
+// دالة للحصول على التاريخ بصيغة YYYY-MM-DD حسب التوقيت المحلي
+function getLocalDateString(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+// دالة تنسيق التاريخ للعرض: يوم/شهر/سنة
 function formatDateAR(date) {
     if (!date) return "--";
     const d = String(date.getDate()).padStart(2, '0');
@@ -34,7 +42,8 @@ async function loadAllData() {
                 const d = new Date(clean["Timestamp"]);
                 if (!isNaN(d)) {
                     clean.dateObj = d;
-                    clean.isoDate = d.toISOString().split('T')[0];
+                    // استخدام التاريخ المحلي للمطابقة الدقيقة مع التقويم
+                    clean.isoDate = getLocalDateString(d);
                 }
                 return clean;
             }).filter(r => r.isoDate);
@@ -205,28 +214,52 @@ function renderCalendar(data) {
         return;
     }
 
+    // استخراج كافة تواريخ النشاط المفلترة
     const trainedDates = new Set(data.map(d => d.isoDate));
+    
+    // تحديد الشهر والسنة بناءً على أحدث سجل
     const latestDate = data[0].dateObj;
-    const y = latestDate.getFullYear(), m = latestDate.getMonth();
-    const firstDay = new Date(y, m, 1), lastDay = new Date(y, m + 1, 0);
+    const y = latestDate.getFullYear();
+    const m = latestDate.getMonth();
+    const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
-    // السبت = 0 في منطقنا لتناسب الثقافة العربية
+    // إضافة ملاحظة نصية بالمدى الزمني المعروض
+    const rangeNote = document.createElement('div');
+    rangeNote.className = 'col-span-7 text-right mb-2 text-[10px] font-bold text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100';
+    rangeNote.innerText = `عرض سجل النشاط لشهر: ${monthNames[m]} ${y}`;
+    grid.appendChild(rangeNote);
+
+    const firstDay = new Date(y, m, 1);
+    const lastDay = new Date(y, m + 1, 0);
+
+    // السبت = 0 في منطقنا لتناسب الثقافة العربية (السبت بداية الأسبوع)
+    // getDay: الأحد=0، الاثنين=1... السبت=6
+    // لجعل السبت=0: (getDay() + 1) % 7
     const startOffset = (firstDay.getDay() + 1) % 7;
 
     const headers = ['س', 'ح', 'ن', 'ث', 'ر', 'خ', 'ج'];
     headers.forEach(h => {
-        grid.innerHTML += `<div class="cal-header">${h}</div>`;
+        const hDiv = document.createElement('div');
+        hDiv.className = 'cal-header';
+        hDiv.innerText = h;
+        grid.appendChild(hDiv);
     });
 
+    // إضافة فراغات ما قبل بداية الشهر
     for (let i = 0; i < startOffset; i++) {
-        grid.innerHTML += `<div></div>`;
+        grid.appendChild(document.createElement('div'));
     }
 
+    // رسم أيام الشهر ومطابقة تواريخ النشاط
     for (let d = 1; d <= lastDay.getDate(); d++) {
         const curDate = new Date(y, m, d);
-        const iso = curDate.toISOString().split('T')[0];
+        const iso = getLocalDateString(curDate);
         const isTrained = trainedDates.has(iso);
-        grid.innerHTML += `<div class="cal-day ${isTrained ? 'day-active' : 'day-idle'}">${d}</div>`;
+        
+        const dayDiv = document.createElement('div');
+        dayDiv.className = `cal-day ${isTrained ? 'day-active' : 'day-idle'}`;
+        dayDiv.innerText = d;
+        grid.appendChild(dayDiv);
     }
 }
 
@@ -243,7 +276,7 @@ function renderTable(data) {
     data.forEach(d => {
         const isHealthy = d["ملاحظات صحية"] === "الخيل سليم تماماً";
         body.innerHTML += `
-            <tr class="hover:bg-slate-50 transition border-b border-slate-50">
+            <tr class="hover:bg-slate-50 transition border-b border-slate-50 text-right">
                 <td class="p-4 font-bold text-slate-700">
                     ${formatDateAR(d.dateObj)}
                     <span class="block text-[9px] text-slate-400 font-normal mt-1">${d.dateObj.getHours()}:${String(d.dateObj.getMinutes()).padStart(2, '0')}</span>
@@ -292,7 +325,7 @@ function searchHorseData() {
                     </div>`;
             } else if (val) {
                 cardContent += `
-                    <div class="flex justify-between border-b border-slate-50 pb-1 mb-1">
+                    <div class="flex justify-between border-b border-slate-50 pb-1 mb-1 text-right">
                         <span class="font-bold text-slate-500">${k}:</span>
                         <span class="text-slate-700">${val}</span>
                     </div>`;
