@@ -117,6 +117,7 @@ function initializeUI() {
     }
 
     applyFilters();
+    renderHorseRecords(horseGeneralRecords);
 }
 
 function switchTab(tabId) {
@@ -332,45 +333,66 @@ function renderTable(data) {
 
 function searchHorseData() {
     const q = document.getElementById('recordSearch')?.value.toLowerCase() || "";
+    const res = q
+        ? horseGeneralRecords.filter(r =>
+            Object.values(r).some(v => String(v).toLowerCase().includes(q))
+        )
+        : horseGeneralRecords;
+
+    renderHorseRecords(res, q);
+}
+
+function buildRecordValue(val) {
+    const trimmed = String(val || "").trim();
+    if (!trimmed) return "";
+    const lower = trimmed.toLowerCase();
+    const isTrue = lower === "true";
+    const isFalse = lower === "false" || lower === "fulse" || lower === "flase";
+
+    if (isTrue || isFalse) {
+        return `<span class="record-badge ${isTrue ? 'record-badge-true' : 'record-badge-false'}">${isTrue ? '✓' : '✕'}</span>`;
+    }
+
+    if (trimmed.startsWith('http')) {
+        return `<a href="${trimmed}" target="_blank" class="record-link">فتح المرفق</a>`;
+    }
+
+    return `<span class="record-value">${trimmed}</span>`;
+}
+
+function renderHorseRecords(records, query = "") {
     const cont = document.getElementById('recordsContainer');
     if (!cont) return;
     cont.innerHTML = '';
-    
-    if (!q) return;
 
-    const res = horseGeneralRecords.filter(r => 
-        Object.values(r).some(v => String(v).toLowerCase().includes(q))
-    );
-
-    if (res.length === 0) {
-        cont.innerHTML = '<div class="col-span-full text-center p-12 glass-card text-slate-400 font-bold">لم يتم العثور على نتائج للبحث</div>';
+    if (!records || records.length === 0) {
+        cont.innerHTML = `
+            <div class="col-span-full text-center p-12 glass-card text-slate-400 font-bold">
+                ${query ? 'لم يتم العثور على نتائج للبحث' : 'لا توجد بيانات للعرض'}
+            </div>`;
         return;
     }
 
-    res.forEach(r => {
+    records.forEach(r => {
         let cardContent = "";
-        for (let k in r) {
-            if (k === "اسم الخيل") continue;
-            const val = r[k];
-            if (val && val.startsWith('http')) {
-                cardContent += `
-                    <div class="flex justify-between items-center bg-slate-50 p-2 rounded-lg mb-2">
-                        <span class="font-bold text-slate-500">${k}:</span>
-                        <a href="${val}" target="_blank" class="text-blue-500 underline font-bold text-[10px]">فتح المرفق</a>
-                    </div>`;
-            } else if (val) {
-                cardContent += `
-                    <div class="flex justify-between border-b border-slate-50 pb-1 mb-1 text-right">
-                        <span class="font-bold text-slate-500">${k}:</span>
-                        <span class="text-slate-700">${val}</span>
-                    </div>`;
-            }
-        }
+        Object.entries(r).forEach(([k, val]) => {
+            if (k === "اسم الخيل") return;
+            const valueHtml = buildRecordValue(val);
+            if (!valueHtml) return;
+            cardContent += `
+                <div class="record-meta">
+                    <span class="record-label">${k}</span>
+                    ${valueHtml}
+                </div>`;
+        });
 
         cont.innerHTML += `
-            <div class="glass-card p-5 border-t-4 border-[#0b2447] text-right animate-in fade-in duration-300">
-                <h3 class="text-lg font-black text-cyan-600 mb-4 pb-2 border-b border-slate-100">${r["اسم الخيل"] || "بيانات خيل"}</h3>
-                <div class="space-y-1 text-xs">
+            <div class="record-card glass-card animate-in fade-in duration-300">
+                <div class="record-card-header">
+                    <h3 class="record-title">${r["اسم الخيل"] || "بيانات خيل"}</h3>
+                    <span class="record-subtitle">ملف الخيل الكامل</span>
+                </div>
+                <div class="record-card-body">
                     ${cardContent}
                 </div>
             </div>`;
