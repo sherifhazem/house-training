@@ -157,6 +157,31 @@ function buildDetailTable(data) {
   body.innerHTML = rows.join('');
 }
 
+function getReportPayload() {
+  const raw = localStorage.getItem('jadaReportPayload');
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    return null;
+  }
+}
+
+function hydrateReportData(payload) {
+  if (!payload || !Array.isArray(payload.data)) return [];
+
+  return payload.data.map((row) => {
+    const obj = { ...row };
+    const dateSeed = obj.isoDate || obj.dateObj || obj["التاريخ"] || obj["Timestamp"];
+    const dt = parseISODateOnly(dateSeed) || parseSheetDateOnly(dateSeed);
+    if (!dt) return null;
+
+    obj.dateObj = dt;
+    obj.isoDate = toLocalISODateOnly(dt);
+    return obj;
+  }).filter(Boolean);
+}
+
 function initReport() {
   if (!Array.isArray(masterData) || !masterData.length) {
     setReportStatus('لا توجد بيانات للعرض');
@@ -205,6 +230,19 @@ async function exportReport() {
 }
 
 window.onload = () => {
+  const payload = getReportPayload();
+  if (payload) {
+    masterData = hydrateReportData(payload);
+    const autoExport = localStorage.getItem('jadaReportAutoExport') === '1';
+    localStorage.removeItem('jadaReportPayload');
+    localStorage.removeItem('jadaReportAutoExport');
+    initReport();
+    if (autoExport) {
+      exportReport();
+    }
+    return;
+  }
+
   fetchData({
     onSuccess: initReport,
     onLoading: (isLoading) => {

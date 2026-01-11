@@ -8,6 +8,7 @@ const RECORDS_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSAeCLUYDXe
 let masterTrainingData = [];
 let horseGeneralRecords = [];
 let activeCharts = {};
+let filteredTrainingData = [];
 
 /**
  * دالة مخصصة لتحليل التاريخ بصيغة يوم/شهر/سنة (DD/MM/YYYY)
@@ -150,6 +151,7 @@ function applyFilters() {
     });
 
     filtered.sort((a, b) => b.dateObj - a.dateObj);
+    filteredTrainingData = filtered;
     refreshDashboard(filtered);
 }
 
@@ -408,34 +410,26 @@ function searchTable() {
 }
 
 async function exportToPDF() {
-    const el = document.getElementById('app-wrapper');
-    if (!el) return;
+    const dataForReport = filteredTrainingData.length ? filteredTrainingData : masterTrainingData;
+    if (!dataForReport.length) return;
 
-    document.body.classList.add('pdf-mode');
-    const header = document.getElementById('pdf-report-header');
-    const footer = document.getElementById('pdf-footer');
-    const dateText = document.getElementById('pdf-date');
-
-    if (header) header.classList.remove('hidden');
-    if (footer) footer.classList.remove('hidden');
-    if (dateText) dateText.innerText = formatDateAR(new Date());
-
-    const opt = {
-        margin: 10,
-        filename: `مربط_جادا_تقرير_${formatDateAR(new Date()).replace(/\//g, '-')}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
+    const payload = dataForReport.map(item => {
+        const copy = { ...item };
+        if (item.dateObj instanceof Date) {
+            copy.dateObj = item.isoDate || getLocalDateString(item.dateObj);
+        }
+        return copy;
+    });
 
     try {
-        await html2pdf().set(opt).from(el).save();
+        localStorage.setItem('jadaReportPayload', JSON.stringify({
+            data: payload,
+            createdAt: new Date().toISOString()
+        }));
+        localStorage.setItem('jadaReportAutoExport', '1');
+        window.open('report.html?auto=1', '_blank');
     } catch (err) {
         console.error("PDF Export Error:", err);
-    } finally {
-        document.body.classList.remove('pdf-mode');
-        if (header) header.classList.add('hidden');
-        if (footer) footer.classList.add('hidden');
     }
 }
 
