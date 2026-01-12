@@ -307,12 +307,12 @@ function renderTable(data) {
     body.innerHTML = '';
     
     if (data.length === 0) {
-        body.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400">لا توجد سجلات مطابقة للبحث</td></tr>';
+        body.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-slate-400">لا توجد سجلات مطابقة للبحث</td></tr>';
         return;
     }
 
     data.forEach(d => {
-        const isHealthy = d["ملاحظات صحية"] === "الخيل سليم تماماً";
+        const attachments = (d["يمكنك رفع صور او فيدو للتوثيق"] || "").trim();
         body.innerHTML += `
             <tr class="hover:bg-slate-50 transition border-b border-slate-50 text-right">
                 <td class="p-4 font-bold text-slate-700">
@@ -322,10 +322,13 @@ function renderTable(data) {
                 <td class="p-4 font-bold text-[#0b2447]">${d["اسم الخيل"]}</td>
                 <td class="p-4"><span class="bg-slate-100 text-slate-600 px-2 py-1 rounded text-[10px] font-bold">${d["نوع التدريب اليومي"]}</span></td>
                 <td class="p-4 font-black text-cyan-600 text-xs">${d["مدة الحصة التدريبية بالدقيقة"]} د</td>
+                <td class="p-4 text-slate-600">${d["ملاحظات إضافية من المدرب"] || ''}</td>
                 <td class="p-4 text-center no-print">
-                    <a href="${d["يمكنك رفع صور او فيدو للتوثيق"]}" target="_blank" class="text-cyan-500 hover:scale-110 transition inline-block">
-                        <i data-lucide="external-link" class="w-4 h-4"></i>
-                    </a>
+                    ${attachments ? `
+                        <a href="${attachments}" target="_blank" class="text-cyan-500 hover:scale-110 transition inline-block">
+                            <i data-lucide="external-link" class="w-4 h-4"></i>
+                        </a>
+                    ` : ''}
                 </td>
             </tr>
         `;
